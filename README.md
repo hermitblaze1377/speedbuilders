@@ -74,7 +74,7 @@ Para probar solo, únete con `/sb unirse` y fuerza el inicio con `/sb iniciar`.
 
 - `config.yml`: jugadores, tiempos, rondas, porcentaje de eliminación y materiales de las plataformas.
 - `mensajes.yml`: todos los textos, en [MiniMessage](https://docs.advntr.dev/minimessage/format.html) (chat, títulos, action bar, bossbar y scoreboard).
-- `construcciones.yml`: incluye 21 construcciones (9 fáciles, 8 medias y 4 difíciles) en un formato de capas fácil de editar.
+- `construcciones.yml`: incluye 36 construcciones (14 fáciles, 14 medias y 8 difíciles) en un formato de capas fácil de editar.
 - `arena.yml`: centro y lobby (se genera solo).
 
 ### Crear construcciones desde el juego
