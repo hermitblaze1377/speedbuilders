@@ -1,0 +1,303 @@
+# ==========================================================
+#             SpeedBuilders  -  Construcciones
+# ==========================================================
+# Cada construcción ocupa una base de 5x5 bloques.
+#
+#  nombre:     nombre que ven los jugadores
+#  dificultad: FACIL, MEDIO o DIFICIL
+#              (rondas 1-3 fáciles, 4-7 medias y 8-10 difíciles)
+#  paleta:     un carácter por bloque, usando block data de Minecraft
+#  capas:      de abajo hacia arriba. Cada capa tiene 5 filas de
+#              5 caracteres; la primera fila es el lado NORTE, el primer
+#              carácter es el lado OESTE y "." es aire.
+#
+# Solo se exigen las propiedades que escribas entre [ ]:
+# "oak_stairs[facing=north]" exige la orientación, "oak_fence" no.
+# Las hojas deben llevar [persistent=true] para no desaparecer.
+#
+# También puedes construir en el juego y guardarlo con:
+#   /sb guardar <id> <facil|medio|dificil> <nombre>
+
+construcciones:
+
+  # ------------------------- FÁCILES -------------------------
+
+  piramide:
+    nombre: "Pirámide"
+    dificultad: FACIL
+    paleta:
+      "S": "minecraft:sandstone"
+      "C": "minecraft:chiseled_sandstone"
+    capas:
+      - ["SSSSS", "SSSSS", "SSSSS", "SSSSS", "SSSSS"]
+      - [".....", ".SSS.", ".SSS.", ".SSS.", "....."]
+      - [".....", ".....", "..C..", ".....", "....."]
+
+  corazon:
+    nombre: "Corazón"
+    dificultad: FACIL
+    paleta:
+      "R": "minecraft:red_wool"
+    capas:
+      - [".....", ".....", "..R..", ".....", "....."]
+      - [".....", ".....", ".RRR.", ".....", "....."]
+      - [".....", ".....", "RRRRR", ".....", "....."]
+      - [".....", ".....", ".R.R.", ".....", "....."]
+
+  bandera:
+    nombre: "Bandera"
+    dificultad: FACIL
+    paleta:
+      "F": "minecraft:oak_fence"
+      "R": "minecraft:red_wool"
+      "W": "minecraft:white_wool"
+    capas:
+      - [".....", ".....", "F....", ".....", "....."]
+      - [".....", ".....", "F....", ".....", "....."]
+      - [".....", ".....", "FRWR.", ".....", "....."]
+      - [".....", ".....", "FWRW.", ".....", "....."]
+      - [".....", ".....", "F....", ".....", "....."]
+
+  muneco:
+    nombre: "Muñeco de nieve"
+    dificultad: FACIL
+    paleta:
+      "S": "minecraft:snow_block"
+      "P": "minecraft:carved_pumpkin[facing=south]"
+    capas:
+      - [".....", ".SSS.", ".SSS.", ".SSS.", "....."]
+      - [".....", ".....", "..S..", ".....", "....."]
+      - [".....", ".....", "..P..", ".....", "....."]
+
+  tablero:
+    nombre: "Tablero de ajedrez"
+    dificultad: FACIL
+    paleta:
+      "B": "minecraft:black_concrete"
+      "W": "minecraft:white_concrete"
+    capas:
+      - ["BWBWB", "WBWBW", "BWBWB", "WBWBW", "BWBWB"]
+
+  faro:
+    nombre: "Faro"
+    dificultad: FACIL
+    paleta:
+      "S": "minecraft:stone_bricks"
+      "R": "minecraft:red_concrete"
+      "W": "minecraft:white_concrete"
+      "L": "minecraft:sea_lantern"
+      "T": "minecraft:stone_brick_slab[type=bottom]"
+    capas:
+      - [".....", ".SSS.", ".SRS.", ".SSS.", "....."]
+      - [".....", ".....", "..W..", ".....", "....."]
+      - [".....", ".....", "..R..", ".....", "....."]
+      - [".....", ".....", "..W..", ".....", "....."]
+      - [".....", ".....", "..L..", ".....", "....."]
+      - [".....", ".....", "..T..", ".....", "....."]
+
+  tarta:
+    nombre: "Tarta"
+    dificultad: FACIL
+    paleta:
+      "B": "minecraft:brown_terracotta"
+      "W": "minecraft:white_concrete"
+      "R": "minecraft:red_wool"
+    capas:
+      - [".....", ".BBB.", ".BBB.", ".BBB.", "....."]
+      - [".....", ".WWW.", ".WWW.", ".WWW.", "....."]
+      - [".....", ".....", "..R..", ".....", "....."]
+
+  creeper:
+    nombre: "Cara de Creeper"
+    dificultad: FACIL
+    paleta:
+      "L": "minecraft:lime_concrete"
+      "B": "minecraft:black_concrete"
+    capas:
+      - ["LLLLL", "LBLBL", "LLBLL", "LBBBL", "LBLBL"]
+
+  flor:
+    nombre: "Flor gigante"
+    dificultad: FACIL
+    paleta:
+      "S": "minecraft:green_wool"
+      "L": "minecraft:lime_wool"
+      "P": "minecraft:pink_wool"
+      "Y": "minecraft:yellow_wool"
+    capas:
+      - [".....", ".....", "..S..", ".....", "....."]
+      - [".....", ".....", ".LSL.", ".....", "....."]
+      - [".....", ".....", "..S..", ".....", "....."]
+      - [".....", ".....", ".PPP.", ".....", "....."]
+      - [".....", ".....", ".PYP.", ".....", "....."]
+      - [".....", ".....", ".PPP.", ".....", "....."]
+
+  # ------------------------- MEDIAS -------------------------
+
+  seta:
+    nombre: "Seta"
+    dificultad: MEDIO
+    paleta:
+      "T": "minecraft:mushroom_stem"
+      "R": "minecraft:red_mushroom_block"
+      "W": "minecraft:white_concrete"
+    capas:
+      - [".....", ".....", "..T..", ".....", "....."]
+      - [".....", ".....", "..T..", ".....", "....."]
+      - [".RRR.", "RRRRR", "RRRRR", "RRRRR", ".RRR."]
+      - [".....", ".RWR.", ".WRW.", ".RWR.", "....."]
+
+  arbol:
+    nombre: "Árbol"
+    dificultad: MEDIO
+    paleta:
+      "O": "minecraft:oak_log[axis=y]"
+      "L": "minecraft:oak_leaves[persistent=true]"
+    capas:
+      - [".....", ".....", "..O..", ".....", "....."]
+      - [".....", ".....", "..O..", ".....", "....."]
+      - [".LLL.", "LLLLL", "LLOLL", "LLLLL", ".LLL."]
+      - [".....", ".LLL.", ".LOL.", ".LLL.", "....."]
+      - [".....", "..L..", ".LLL.", "..L..", "....."]
+
+  fuente:
+    nombre: "Fuente"
+    dificultad: MEDIO
+    paleta:
+      "S": "minecraft:stone_bricks"
+      "G": "minecraft:light_blue_stained_glass"
+      "C": "minecraft:chiseled_stone_bricks"
+      "P": "minecraft:quartz_pillar[axis=y]"
+      "L": "minecraft:sea_lantern"
+    capas:
+      - ["SSSSS", "SGGGS", "SGCGS", "SGGGS", "SSSSS"]
+      - [".....", ".....", "..P..", ".....", "....."]
+      - [".....", ".....", "..P..", ".....", "....."]
+      - [".....", "..G..", ".GLG.", "..G..", "....."]
+
+  castillo:
+    nombre: "Castillo"
+    dificultad: MEDIO
+    paleta:
+      "S": "minecraft:stone_bricks"
+      "T": "minecraft:mossy_stone_bricks"
+    capas:
+      - ["TSSST", "S...S", "S...S", "S...S", "TS.ST"]
+      - ["TSSST", "S...S", "S...S", "S...S", "TS.ST"]
+      - ["T.S.T", ".....", "S...S", ".....", "T.S.T"]
+
+  cohete:
+    nombre: "Cohete"
+    dificultad: MEDIO
+    paleta:
+      "W": "minecraft:white_concrete"
+      "R": "minecraft:red_concrete"
+      "G": "minecraft:light_blue_stained_glass"
+    capas:
+      - [".....", "..R..", ".RWR.", "..R..", "....."]
+      - [".....", "..R..", ".RWR.", "..R..", "....."]
+      - [".....", ".....", "..W..", ".....", "....."]
+      - [".....", ".....", "..G..", ".....", "....."]
+      - [".....", ".....", "..W..", ".....", "....."]
+      - [".....", ".....", "..R..", ".....", "....."]
+
+  barco:
+    nombre: "Barco velero"
+    dificultad: MEDIO
+    paleta:
+      "P": "minecraft:spruce_planks"
+      "F": "minecraft:oak_fence"
+      "W": "minecraft:white_wool"
+    capas:
+      - [".....", "..P..", "..P..", "..P..", "....."]
+      - ["..P..", ".PPP.", ".PPP.", ".PPP.", "..P.."]
+      - [".....", ".....", "..F..", ".....", "....."]
+      - [".....", ".....", ".WFW.", ".....", "....."]
+      - [".....", ".....", ".WFW.", ".....", "....."]
+      - [".....", ".....", "..F..", ".....", "....."]
+
+  pozo:
+    nombre: "Pozo de agua"
+    dificultad: MEDIO
+    paleta:
+      "C": "minecraft:cobblestone"
+      "W": "minecraft:blue_stained_glass"
+      "F": "minecraft:oak_fence"
+      "S": "minecraft:oak_slab[type=bottom]"
+    capas:
+      - [".....", ".CCC.", ".CWC.", ".CCC.", "....."]
+      - [".....", ".CCC.", ".C.C.", ".CCC.", "....."]
+      - [".....", ".F.F.", ".....", ".F.F.", "....."]
+      - [".....", ".SSS.", ".SSS.", ".SSS.", "....."]
+
+  tienda:
+    nombre: "Tienda de campaña"
+    dificultad: MEDIO
+    paleta:
+      "A": "minecraft:spruce_stairs[facing=east,half=bottom]"
+      "B": "minecraft:spruce_stairs[facing=west,half=bottom]"
+      "P": "minecraft:spruce_planks"
+    capas:
+      - ["A...B", "A...B", "A...B", "A...B", "A...B"]
+      - [".A.B.", ".A.B.", ".A.B.", ".A.B.", ".A.B."]
+      - ["..P..", "..P..", "..P..", "..P..", "..P.."]
+
+  # ------------------------- DIFÍCILES -------------------------
+
+  escalinata:
+    nombre: "Escalinata de cuarzo"
+    dificultad: DIFICIL
+    paleta:
+      "B": "minecraft:quartz_block"
+      "E": "minecraft:quartz_stairs[facing=north,half=bottom]"
+    capas:
+      - [".BBB.", ".BBB.", ".BBB.", ".EEE.", "....."]
+      - [".BBB.", ".BBB.", ".EEE.", ".....", "....."]
+      - [".BBB.", ".EEE.", ".....", ".....", "....."]
+      - [".EEE.", ".....", ".....", ".....", "....."]
+
+  casita:
+    nombre: "Casita de madera"
+    dificultad: DIFICIL
+    paleta:
+      "P": "minecraft:oak_planks"
+      "O": "minecraft:oak_log[axis=y]"
+      "G": "minecraft:glass"
+      "A": "minecraft:oak_stairs[facing=south,half=bottom]"
+      "B": "minecraft:oak_stairs[facing=north,half=bottom]"
+      "S": "minecraft:oak_slab[type=bottom]"
+    capas:
+      - ["OPPPO", "P...P", "P...P", "P...P", "OP.PO"]
+      - ["OPPPO", "P...P", "G...G", "P...P", "OP.PO"]
+      - ["AAAAA", "P...P", "P...P", "P...P", "BBBBB"]
+      - [".....", "AAAAA", "PPPPP", "BBBBB", "....."]
+      - [".....", ".....", "SSSSS", ".....", "....."]
+
+  puente:
+    nombre: "Puente de piedra"
+    dificultad: DIFICIL
+    paleta:
+      "S": "minecraft:stone_bricks"
+      "A": "minecraft:stone_brick_stairs[facing=west,half=top]"
+      "B": "minecraft:stone_brick_stairs[facing=east,half=top]"
+      "W": "minecraft:stone_brick_wall"
+    capas:
+      - [".....", "S...S", "S...S", "S...S", "....."]
+      - [".....", "SA.BS", "SA.BS", "SA.BS", "....."]
+      - [".....", "SSSSS", "SSSSS", "SSSSS", "....."]
+      - [".....", "WWWWW", ".....", "WWWWW", "....."]
+
+  templo:
+    nombre: "Templo griego"
+    dificultad: DIFICIL
+    paleta:
+      "P": "minecraft:quartz_pillar[axis=y]"
+      "Q": "minecraft:smooth_quartz"
+      "C": "minecraft:quartz_slab[type=bottom]"
+      "G": "minecraft:gold_block"
+    capas:
+      - ["P...P", ".....", ".....", ".....", "P...P"]
+      - ["P...P", ".....", ".....", ".....", "P...P"]
+      - ["P...P", ".....", ".....", ".....", "P...P"]
+      - ["QQQQQ", "QQQQQ", "QQQQQ", "QQQQQ", "QQQQQ"]
+      - [".....", ".CCC.", ".CGC.", ".CCC.", "....."]

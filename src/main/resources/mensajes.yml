@@ -1,0 +1,154 @@
+# ==========================================================
+#               SpeedBuilders  -  Mensajes
+# ==========================================================
+# Formato MiniMessage: https://docs.advntr.dev/minimessage/format.html
+# Los <marcadores> (por ejemplo <jugador>) se reemplazan solos.
+
+prefijo: "<dark_gray>[<gradient:#FFD84D:#FF8A00><bold>SB</bold></gradient><dark_gray>] <gray>"
+
+# ---------------- General ----------------
+sin-permiso: "<red>No tienes permiso para hacer eso."
+solo-jugadores: "<red>Este comando solo lo puede usar un jugador."
+comando-desconocido: "<red>Comando desconocido. Usa <white>/sb ayuda</white>."
+numero-invalido: "<red>Escribe un número válido."
+arena-no-lista: "<red>La arena no está configurada. Un administrador debe usar <white>/sb setcentro</white> y <white>/sb setlobby</white>."
+
+# ---------------- Entrar / salir ----------------
+ya-en-partida: "<red>Ya estás en la partida."
+no-en-partida: "<red>No estás en ninguna partida."
+partida-llena: "<red>La partida está llena."
+partida-terminando: "<red>La partida está terminando, espera unos segundos."
+unido: "<green><jugador></green> se unió a la partida <dark_gray>(<white><actual></white>/<white><maximo></white>)"
+salio: "<red><jugador></red> salió de la partida <dark_gray>(<white><actual></white>/<white><maximo></white>)"
+has-salido: "<gray>Saliste de la partida."
+unido-espectador: "<gray>La partida ya empezó: entraste como <white>espectador</white>."
+abandono: "<red><jugador></red> abandonó la partida."
+
+# ---------------- Inicio ----------------
+cuenta-regresiva: "<yellow>La partida empieza en <gold><bold><segundos></bold></gold> segundos."
+cuenta-cancelada: "<red>No hay suficientes jugadores. Se canceló la cuenta regresiva."
+partida-completa: "<green>¡Partida llena! Empezamos en 10 segundos."
+partida-iniciada: "<green>¡Comienza la partida! <gray>Sobrevive <white><rondas></white> rondas replicando construcciones."
+sin-construcciones: "<red>No hay construcciones cargadas. Revisa construcciones.yml."
+
+# ---------------- Rondas ----------------
+anuncio-ronda: |-
+  <dark_gray><strikethrough>                                                  </strikethrough>
+  <gradient:#FFD84D:#FF8A00><bold>   RONDA <ronda></bold></gradient> <dark_gray>/ <gray><maximo>
+  <gray>   Construcción: <white><bold><construccion></bold></white> <dark_gray>• <dificultad>
+  <gray>   Bloques: <white><bloques></white>
+  <gray>   ¡Memorízala! Desaparecerá en <yellow><segundos> segundos</yellow>.
+  <dark_gray><strikethrough>                                                  </strikethrough>
+inicio-construccion: "<green>¡A construir!</green> <gray>Solo clasifican los <white><clasificados></white> primeros en completarla. <dark_gray>(<red><eliminados></red> <dark_gray>eliminados como mínimo)"
+completado: "<green>✔ <white><jugador></white> completó la construcción en <yellow><tiempo>s</yellow> <dark_gray>(#<posicion>/<clasificados>)"
+eliminado: "<red>✘ <white><jugador></white> fue eliminado <dark_gray>(<red><porcentaje>%</red>)"
+
+resultados:
+  cabecera: |-
+    <dark_gray><strikethrough>                                                  </strikethrough>
+    <gradient:#B388FF:#7C4DFF><bold>   RESULTADOS</bold></gradient> <dark_gray>• <gray>Ronda <white><ronda></white> <dark_gray>• <white><construccion>
+  completado: "<gray>   #<posicion> <green>✔ <white><jugador></white> <dark_gray>- <yellow><tiempo>s"
+  salvado: "<gray>   #<posicion> <yellow>● <white><jugador></white> <dark_gray>- <yellow><porcentaje>%"
+  eliminado: "<gray>   #<posicion> <red>✘ <white><jugador></white> <dark_gray>- <red><porcentaje>%"
+  pie: |-
+    <gray>   Siguen en juego: <green><vivos></green>
+    <dark_gray><strikethrough>                                                  </strikethrough>
+
+# ---------------- Final ----------------
+ganador: |-
+  <dark_gray><strikethrough>                                                  </strikethrough>
+  <gradient:#FFD84D:#FF8A00><bold>   ¡FIN DE LA PARTIDA!</bold></gradient>
+  <gray>   Ganador: <gold><bold><jugador></bold></gold> <dark_gray>(ronda <ronda>)
+  <dark_gray><strikethrough>                                                  </strikethrough>
+ganador-global: "<gold><bold><jugador></bold></gold> <gray>ganó una partida de <yellow>Speed Builders</yellow>. ¡Usa <white>/sb unirse</white> para jugar!"
+sin-ganador: |-
+  <dark_gray><strikethrough>                                                  </strikethrough>
+  <gradient:#FFD84D:#FF8A00><bold>   ¡FIN DE LA PARTIDA!</bold></gradient>
+  <gray>   Esta vez nadie consiguió ganar.
+  <dark_gray><strikethrough>                                                  </strikethrough>
+partida-detenida: "<red>Un administrador detuvo la partida."
+
+# ---------------- Títulos ----------------
+titulo:
+  cuenta: "<gradient:#FFD84D:#FF8A00><bold><segundos></bold></gradient>"
+  cuenta-sub: "<gray>Prepárate para construir"
+  ronda: "<gradient:#FFD84D:#FF8A00><bold>RONDA <ronda></bold></gradient>"
+  ronda-sub: "<white><construccion></white> <dark_gray>• <dificultad>"
+  construir: "<green><bold>¡CONSTRUYE!</bold>"
+  construir-sub: "<gray>Clasifican los <white><clasificados></white> primeros"
+  perfecto: "<green><bold>¡PERFECTO!</bold>"
+  perfecto-sub: "<gray>Tiempo: <yellow><tiempo>s</yellow> <dark_gray>• <gray>Puesto <white>#<posicion>"
+  eliminado: "<red><bold>ELIMINADO</bold>"
+  eliminado-sub: "<gray>Similitud: <red><porcentaje>%</red> <dark_gray>• <gray>Ahora eres espectador"
+  victoria: "<gradient:#FFD84D:#FF8A00><bold>¡VICTORIA!</bold></gradient>"
+  victoria-sub: "<gray>Eres el mejor constructor"
+  ganador: "<gold><bold><jugador></bold>"
+  ganador-sub: "<gray>ha ganado la partida"
+  sin-ganador: "<red><bold>SIN GANADOR</bold>"
+  sin-ganador-sub: "<gray>Nadie logró sobrevivir"
+
+# ---------------- Barra de acción ----------------
+actionbar:
+  memorizando: "<yellow>✦ <gray>Memoriza la construcción <dark_gray>• <white><segundos>s"
+  construyendo: "<gray>Similitud <barra> <porcentaje> <dark_gray>• <gray>Tiempo <white><segundos>s"
+  completado: "<green><bold>✔ ¡COMPLETADO!</bold> <gray>Esperando al resto..."
+
+# ---------------- Bossbar ----------------
+bossbar:
+  esperando: "<yellow>Esperando jugadores <dark_gray>• <white><actual></white><gray>/<white><maximo></white> <dark_gray>(mín. <minimo>)"
+  iniciando: "<green>La partida empieza en <white><bold><segundos>s</bold>"
+  memorizando: "<yellow>✦ Memoriza: <white><bold><construccion></bold></white> <dark_gray>• <white><segundos>s"
+  construyendo: "<green>Construye: <white><bold><construccion></bold></white> <dark_gray>• <white><segundos>s <dark_gray>• <gray>Clasificados <green><clasificados></green><gray>/<white><cupo>"
+  evaluando: "<light_purple><bold>Evaluando construcciones...</bold>"
+  ganador: "<gold>★ <bold><jugador></bold> ganó la partida"
+  sin-ganador: "<red>La partida terminó sin ganador"
+
+# ---------------- Scoreboard ----------------
+scoreboard:
+  titulo: "<gradient:#FFD84D:#FF8A00><bold>SPEED BUILDERS</bold></gradient>"
+  pie: "<yellow>play.tuservidor.net"
+
+# ---------------- Administración ----------------
+centro-establecido: "<green>Centro establecido en <white><x>, <y>, <z></white>. Las plataformas se generarán a esta altura."
+lobby-establecido: "<green>Lobby establecido en tu posición."
+partida-forzada: "<green>Partida iniciada."
+no-se-puede-iniciar: "<red>No se puede iniciar: no hay jugadores unidos o ya hay una partida en curso."
+no-hay-partida: "<red>No hay ninguna partida activa."
+partida-detenida-admin: "<green>Partida detenida y arena limpia."
+plataformas-generadas: "<green>Se generaron <white><cantidad></white> plataformas de prueba. Usa <white>/sb limpiar</white> para quitarlas."
+plataformas-limpias: "<green>Plataformas de prueba eliminadas."
+no-generar-en-partida: "<red>No puedes generar plataformas durante una partida."
+no-en-plataforma: "<red>Debes estar sobre una plataforma (usa <white>/sb generar</white>)."
+uso-pegar: "<red>Uso: <white>/sb pegar <id>"
+uso-guardar: "<red>Uso: <white>/sb guardar <id> <facil|medio|dificil> <nombre...>"
+id-invalido: "<red>El id solo puede tener letras minúsculas, números, '-' y '_'."
+dificultad-invalida: "<red>Dificultad inválida. Usa <white>facil</white>, <white>medio</white> o <white>dificil</white>."
+construccion-no-existe: "<red>No existe la construcción <white><id></white>."
+construccion-pegada: "<green>Construcción <white><construccion></white> colocada en la plataforma."
+zona-vacia: "<red>La zona de construcción de esta plataforma está vacía."
+construccion-guardada: "<green>Construcción <white><construccion></white> <dark_gray>(<id>)</dark_gray> guardada con <white><bloques></white> bloques."
+error-guardar: "<red>No se pudo guardar: <white><error>"
+lista-cabecera: "<gold>Construcciones cargadas: <white><cantidad>"
+lista-linea: "  <dificultad><dark_gray>: <gray><construcciones>"
+recargado: "<green>Configuración recargada. <white><cantidad></white> construcciones cargadas."
+no-recargar-en-partida: "<red>No puedes recargar mientras hay jugadores en la partida."
+
+# ---------------- Ayuda ----------------
+ayuda:
+  jugador: |-
+    <dark_gray><strikethrough>                                                  </strikethrough>
+    <gradient:#FFD84D:#FF8A00><bold>   SPEED BUILDERS</bold></gradient>
+    <yellow>  /sb unirse <dark_gray>- <gray>Unirse a la partida
+    <yellow>  /sb salir <dark_gray>- <gray>Salir de la partida
+  admin: |-
+    <gold>  /sb setcentro <dark_gray>- <gray>Fija el centro (bloque bajo tus pies)
+    <gold>  /sb setlobby <dark_gray>- <gray>Fija el lobby de espera
+    <gold>  /sb iniciar <dark_gray>- <gray>Fuerza el inicio
+    <gold>  /sb detener <dark_gray>- <gray>Detiene la partida
+    <gold>  /sb generar [n] <dark_gray>- <gray>Genera plataformas de prueba
+    <gold>  /sb limpiar <dark_gray>- <gray>Quita las plataformas de prueba
+    <gold>  /sb pegar <id> <dark_gray>- <gray>Coloca una construcción en tu plataforma
+    <gold>  /sb guardar <id> <dif> <nombre> <dark_gray>- <gray>Guarda la construcción de tu plataforma
+    <gold>  /sb construcciones <dark_gray>- <gray>Lista las construcciones
+    <gold>  /sb recargar <dark_gray>- <gray>Recarga la configuración
+    <dark_gray><strikethrough>                                                  </strikethrough>

@@ -1,0 +1,20 @@
+name: SpeedBuilders
+version: '${version}'
+main: com.hermitblaze.speedbuilders.SpeedBuildersPlugin
+api-version: '1.20'
+description: Minijuego Speed Builders - memoriza y replica construcciones.
+authors: [hermitblaze1377]
+
+commands:
+  speedbuilders:
+    description: Comando principal de Speed Builders.
+    aliases: [sb]
+    usage: /<command> ayuda
+
+permissions:
+  speedbuilders.jugar:
+    description: Permite unirse y salir de las partidas.
+    default: true
+  speedbuilders.admin:
+    description: Permite configurar y administrar el minijuego.
+    default: op
