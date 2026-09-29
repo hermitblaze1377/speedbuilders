@@ -4,14 +4,16 @@
 # Los textos se editan en mensajes.yml y las construcciones
 # en construcciones.yml. El centro y el lobby se guardan en
 # arena.yml con /sb setcentro y /sb setlobby.
+#
+# Todos los jugadores entran a la arena al conectarse.
+# La partida solo empieza cuando un administrador usa /sb iniciar.
 
 jugadores:
-  minimos: 2
-  maximos: 16
+  # Máximo de jugadores por partida. Los que sobren miran como espectadores.
+  maximos: 128
 
 # Todos los tiempos van en segundos.
 tiempos:
-  cuenta-regresiva: 30
   # Tiempo que la construcción se muestra antes de desaparecer.
   memorizar: 20
   # Tiempo para replicarla, según la dificultad.
@@ -19,9 +21,9 @@ tiempos:
     FACIL: 45
     MEDIO: 70
     DIFICIL: 95
-  # Pausa para ver los resultados de la ronda.
-  evaluacion: 6
-  # Celebración del ganador antes de cerrar la partida.
+  # Tiempo en que se muestran los resultados y las eliminaciones.
+  evaluacion: 15
+  # Celebración del ganador antes de volver al lobby.
   final: 10
 
 rondas:
@@ -39,6 +41,9 @@ plataformas:
   separacion: 4
   # Radio mínimo del círculo de plataformas.
   radio-minimo: 12
+  # Con pocos jugadores las islas forman un solo círculo. Si ese
+  # círculo superara este radio, se reparten en anillos concéntricos.
+  radio-maximo-un-anillo: 60
   # Altura máxima de construcción sobre la plataforma.
   altura-zona: 6
   materiales:
@@ -48,9 +53,3 @@ plataformas:
     esquinas: SEA_LANTERN
     # Capa inferior de la isla. Usa AIR para desactivarla.
     base: GRAY_CONCRETE
-
-# Al terminar o salir: true = ir al lobby, false = volver a donde estaba.
-al-terminar-ir-al-lobby: true
-
-# Anunciar el ganador a todo el servidor.
-anunciar-ganador-global: true

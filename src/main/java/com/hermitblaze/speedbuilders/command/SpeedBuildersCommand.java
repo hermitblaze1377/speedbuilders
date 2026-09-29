@@ -23,13 +23,15 @@ import java.util.stream.Collectors;
 import static com.hermitblaze.speedbuilders.config.Messages.ph;
 import static com.hermitblaze.speedbuilders.config.Messages.phParsed;
 
+/**
+ * /sb: solo comandos de administración. Los jugadores entran a la arena
+ * automáticamente al conectarse.
+ */
 public final class SpeedBuildersCommand implements TabExecutor {
 
-    private static final String PERM_PLAY = "speedbuilders.jugar";
     private static final String PERM_ADMIN = "speedbuilders.admin";
-    private static final List<String> PLAYER_SUBS = List.of("unirse", "salir", "ayuda");
-    private static final List<String> ADMIN_SUBS = List.of("setcentro", "setlobby", "iniciar", "detener",
-            "generar", "limpiar", "pegar", "guardar", "construcciones", "recargar");
+    private static final List<String> SUBCOMMANDS = List.of("iniciar", "detener", "editar", "setcentro",
+            "setlobby", "generar", "limpiar", "pegar", "guardar", "construcciones", "recargar", "ayuda");
 
     private final SpeedBuildersPlugin plugin;
 
@@ -40,91 +42,86 @@ public final class SpeedBuildersCommand implements TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         Messages m = plugin.messages();
+        if (!sender.hasPermission(PERM_ADMIN)) {
+            m.send(sender, "sin-permiso");
+            return true;
+        }
         Game game = plugin.game();
         if (args.length == 0) {
             help(sender);
             return true;
         }
-        String sub = args[0].toLowerCase(Locale.ROOT);
-        switch (sub) {
-            case "unirse", "entrar", "join" -> {
-                Player player = requirePlayer(sender, PERM_PLAY);
+        switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "iniciar", "start" -> m.send(sender, game.forceStart() ? "partida-forzada" : "no-se-puede-iniciar");
+            case "detener", "stop" -> m.send(sender, game.stop() ? "partida-detenida-admin" : "no-hay-partida");
+            case "editar" -> {
+                Player player = requirePlayer(sender);
                 if (player != null) {
-                    game.join(player);
+                    m.send(player, game.toggleEditor(player) ? "modo-editor-activado" : "modo-editor-desactivado");
                 }
             }
-            case "salir", "leave" -> {
-                Player player = requirePlayer(sender, PERM_PLAY);
-                if (player != null) {
-                    game.leave(player, false);
-                }
-            }
-            case "ayuda", "help" -> help(sender);
             case "setcentro" -> {
-                Player player = requirePlayer(sender, PERM_ADMIN);
+                Player player = requirePlayer(sender);
                 if (player != null) {
                     // El centro es el bloque sobre el que está parado el administrador.
                     Location floor = player.getLocation().clone().subtract(0, 1, 0);
                     plugin.arena().setCenter(floor);
                     m.send(player, "centro-establecido", ph("x", floor.getBlockX()), ph("y", floor.getBlockY()),
                             ph("z", floor.getBlockZ()));
+                    afterArenaChange(player);
                 }
             }
             case "setlobby" -> {
-                Player player = requirePlayer(sender, PERM_ADMIN);
+                Player player = requirePlayer(sender);
                 if (player != null) {
                     plugin.arena().setLobby(player.getLocation());
                     m.send(player, "lobby-establecido");
-                }
-            }
-            case "iniciar", "start" -> {
-                if (requirePermission(sender, PERM_ADMIN)) {
-                    m.send(sender, game.forceStart() ? "partida-forzada" : "no-se-puede-iniciar");
-                }
-            }
-            case "detener", "stop" -> {
-                if (requirePermission(sender, PERM_ADMIN)) {
-                    m.send(sender, game.stop() ? "partida-detenida-admin" : "no-hay-partida");
+                    afterArenaChange(player);
                 }
             }
             case "generar" -> generate(sender, args);
             case "limpiar" -> {
-                if (requirePermission(sender, PERM_ADMIN)) {
-                    game.clearPreview();
-                    m.send(sender, "plataformas-limpias");
-                }
+                game.clearPreview();
+                m.send(sender, "plataformas-limpias");
             }
             case "pegar" -> paste(sender, args);
             case "guardar" -> save(sender, args);
             case "construcciones", "lista" -> list(sender);
             case "recargar", "reload" -> {
-                if (requirePermission(sender, PERM_ADMIN)) {
-                    if (game.isActive()) {
-                        m.send(sender, "no-recargar-en-partida");
-                    } else {
-                        plugin.reloadAll();
-                        m.send(sender, "recargado", ph("cantidad", plugin.builds().all().size()));
-                    }
+                if (game.isRunning()) {
+                    m.send(sender, "no-recargar-en-partida");
+                } else {
+                    plugin.reloadAll();
+                    game.joinAll();
+                    m.send(sender, "recargado", ph("cantidad", plugin.builds().all().size()));
                 }
             }
+            case "ayuda", "help" -> help(sender);
             default -> m.send(sender, "comando-desconocido");
         }
         return true;
     }
 
-    private void help(CommandSender sender) {
-        Messages m = plugin.messages();
-        sender.sendMessage(m.get("ayuda.jugador"));
-        if (sender.hasPermission(PERM_ADMIN)) {
-            sender.sendMessage(m.get("ayuda.admin"));
+    /**
+     * Mientras configura, el administrador queda en modo editor para no ser llevado al lobby.
+     * Cuando la arena ya está lista, entran todos los demás conectados.
+     */
+    private void afterArenaChange(Player player) {
+        Game game = plugin.game();
+        if (game.enterEditor(player)) {
+            plugin.messages().send(player, "modo-editor-activado");
         }
+        if (plugin.arena().isReady()) {
+            game.joinAll();
+        }
+    }
+
+    private void help(CommandSender sender) {
+        sender.sendMessage(plugin.messages().get("ayuda"));
     }
 
     private void generate(CommandSender sender, String[] args) {
         Messages m = plugin.messages();
-        if (!requirePermission(sender, PERM_ADMIN)) {
-            return;
-        }
         int count = plugin.settings().maxPlayers();
         if (args.length > 1) {
             try {
@@ -134,7 +131,7 @@ public final class SpeedBuildersCommand implements TabExecutor {
                 return;
             }
         }
-        count = Math.max(1, Math.min(64, count));
+        count = Math.max(1, Math.min(plugin.settings().maxPlayers(), count));
         if (plugin.arena().center() == null) {
             m.send(sender, "arena-no-lista");
         } else if (plugin.game().generatePreview(count)) {
@@ -146,7 +143,7 @@ public final class SpeedBuildersCommand implements TabExecutor {
 
     private void paste(CommandSender sender, String[] args) {
         Messages m = plugin.messages();
-        Player player = requirePlayer(sender, PERM_ADMIN);
+        Player player = requirePlayer(sender);
         if (player == null) {
             return;
         }
@@ -170,7 +167,7 @@ public final class SpeedBuildersCommand implements TabExecutor {
 
     private void save(CommandSender sender, String[] args) {
         Messages m = plugin.messages();
-        Player player = requirePlayer(sender, PERM_ADMIN);
+        Player player = requirePlayer(sender);
         if (player == null) {
             return;
         }
@@ -210,9 +207,6 @@ public final class SpeedBuildersCommand implements TabExecutor {
 
     private void list(CommandSender sender) {
         Messages m = plugin.messages();
-        if (!requirePermission(sender, PERM_ADMIN)) {
-            return;
-        }
         m.send(sender, "lista-cabecera", ph("cantidad", plugin.builds().all().size()));
         for (Difficulty difficulty : Difficulty.values()) {
             String names = plugin.builds().all().stream()
@@ -224,40 +218,30 @@ public final class SpeedBuildersCommand implements TabExecutor {
         }
     }
 
-    private Player requirePlayer(CommandSender sender, String permission) {
-        if (!(sender instanceof Player player)) {
-            plugin.messages().send(sender, "solo-jugadores");
-            return null;
+    private Player requirePlayer(CommandSender sender) {
+        if (sender instanceof Player player) {
+            return player;
         }
-        return requirePermission(sender, permission) ? player : null;
-    }
-
-    private boolean requirePermission(CommandSender sender, String permission) {
-        if (sender.hasPermission(permission)) {
-            return true;
-        }
-        plugin.messages().send(sender, "sin-permiso");
-        return false;
+        plugin.messages().send(sender, "solo-jugadores");
+        return null;
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (!sender.hasPermission(PERM_ADMIN)) {
+            return List.of();
+        }
         List<String> options = new ArrayList<>();
+        String sub = args[0].toLowerCase(Locale.ROOT);
         if (args.length == 1) {
-            options.addAll(PLAYER_SUBS);
-            if (sender.hasPermission(PERM_ADMIN)) {
-                options.addAll(ADMIN_SUBS);
-            }
-        } else if (sender.hasPermission(PERM_ADMIN)) {
-            String sub = args[0].toLowerCase(Locale.ROOT);
-            if (args.length == 2 && sub.equals("pegar")) {
-                plugin.builds().all().forEach(build -> options.add(build.id()));
-            } else if (args.length == 2 && sub.equals("generar")) {
-                options.addAll(List.of("4", "8", "12", "16"));
-            } else if (args.length == 3 && sub.equals("guardar")) {
-                for (Difficulty difficulty : Difficulty.values()) {
-                    options.add(difficulty.name().toLowerCase(Locale.ROOT));
-                }
+            options.addAll(SUBCOMMANDS);
+        } else if (args.length == 2 && sub.equals("pegar")) {
+            plugin.builds().all().forEach(build -> options.add(build.id()));
+        } else if (args.length == 2 && sub.equals("generar")) {
+            options.addAll(List.of("8", "16", "32", "64", "128"));
+        } else if (args.length == 3 && sub.equals("guardar")) {
+            for (Difficulty difficulty : Difficulty.values()) {
+                options.add(difficulty.name().toLowerCase(Locale.ROOT));
             }
         }
         String prefix = args[args.length - 1].toLowerCase(Locale.ROOT);

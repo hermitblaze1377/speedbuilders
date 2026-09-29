@@ -2,7 +2,6 @@ package com.hermitblaze.speedbuilders.game;
 
 public enum GameState {
     ESPERANDO(false, "<gray>Esperando"),
-    INICIANDO(false, "<green>Iniciando"),
     MEMORIZANDO(true, "<yellow>Memorizando"),
     CONSTRUYENDO(true, "<green>Construyendo"),
     EVALUANDO(true, "<light_purple>Evaluando"),

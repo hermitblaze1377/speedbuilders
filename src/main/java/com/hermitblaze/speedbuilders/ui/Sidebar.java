@@ -9,14 +9,19 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import java.util.List;
+import java.util.Objects;
 
-/** Scoreboard lateral sin parpadeos: cada línea es el prefijo de un equipo. */
+/**
+ * Scoreboard lateral sin parpadeos: cada línea es el prefijo de un equipo.
+ * Solo envía las líneas que cambiaron, para no saturar la red con muchos jugadores.
+ */
 public final class Sidebar {
 
     private static final int MAX_LINES = 15;
 
     private final Scoreboard scoreboard;
     private final Objective objective;
+    private final Component[] current = new Component[MAX_LINES];
     private int shown;
 
     public Sidebar(Component title) {
@@ -38,11 +43,18 @@ public final class Sidebar {
                 team = scoreboard.registerNewTeam("linea" + i);
                 team.addEntry(entry);
             }
-            team.prefix(lines.get(i));
-            objective.getScore(entry).setScore(size - i);
+            Component line = lines.get(i);
+            if (!Objects.equals(current[i], line)) {
+                team.prefix(line);
+                current[i] = line;
+            }
+            if (i >= shown || size != shown) {
+                objective.getScore(entry).setScore(size - i);
+            }
         }
         for (int i = size; i < shown; i++) {
             scoreboard.resetScores(entry(i));
+            current[i] = null;
         }
         shown = size;
     }

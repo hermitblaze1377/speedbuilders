@@ -53,7 +53,10 @@ import static com.hermitblaze.speedbuilders.config.Messages.phParsed;
 
 /**
  * Flujo de una partida:
- * ESPERANDO → INICIANDO (cuenta atrás) → [MEMORIZANDO → CONSTRUYENDO → EVALUANDO] x rondas → FINALIZADO.
+ * ESPERANDO (lobby, hasta /sb iniciar) → [MEMORIZANDO → CONSTRUYENDO → EVALUANDO] x rondas → FINALIZADO.
+ *
+ * Todos los jugadores conectados están en la arena. Al terminar, vuelven al lobby
+ * para la siguiente partida.
  */
 public final class Game {
 
@@ -62,10 +65,13 @@ public final class Game {
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yy");
     private static final String BAR_CHAR = "▌";
     private static final int BAR_LENGTH = 20;
+    /** Líneas de la tabla de resultados en el chat; el resto se resume. */
+    private static final int RESULT_LINES = 10;
 
     private final SpeedBuildersPlugin plugin;
     private final Map<UUID, GamePlayer> players = new LinkedHashMap<>();
     private final Map<UUID, Sidebar> sidebars = new HashMap<>();
+    private final Set<UUID> editors = new HashSet<>();
     private final List<Platform> platforms = new ArrayList<>();
     private final List<Platform> previewPlatforms = new ArrayList<>();
     private final List<GamePlayer> qualified = new ArrayList<>();
@@ -78,6 +84,7 @@ public final class Game {
     private GameState state = GameState.ESPERANDO;
     private Build currentBuild;
     private GamePlayer winner;
+    private Location spectatorPoint;
     private int round;
     private int ticksLeft;
     private int phaseTicks;
@@ -104,7 +111,7 @@ public final class Game {
         if (task != null) {
             task.cancel();
         }
-        reset();
+        reset(false);
         clearPreview();
     }
 
@@ -124,9 +131,9 @@ public final class Game {
         return state;
     }
 
-    /** ¿Hay jugadores o una partida en marcha? */
-    public boolean isActive() {
-        return !players.isEmpty() || state != GameState.ESPERANDO;
+    /** ¿Hay una partida en marcha? */
+    public boolean isRunning() {
+        return state.isRunning();
     }
 
     public GamePlayer player(Player player) {
@@ -134,84 +141,71 @@ public final class Game {
     }
 
     // ------------------------------------------------------------------
-    // Entrar / salir
+    // Entrada automática
     // ------------------------------------------------------------------
 
-    public void join(Player player) {
-        Messages m = messages();
-        if (players.containsKey(player.getUniqueId())) {
-            m.send(player, "ya-en-partida");
-            return;
+    /** Mete en la arena a todos los conectados que aún no están (y no son editores). */
+    public void joinAll() {
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            join(online);
         }
-        if (!arena().isReady()) {
-            m.send(player, "arena-no-lista");
-            return;
-        }
-        if (state == GameState.FINALIZADO) {
-            m.send(player, "partida-terminando");
-            return;
-        }
-        boolean running = state.isRunning();
-        if (!running && players.size() >= settings().maxPlayers()) {
-            m.send(player, "partida-llena");
-            return;
-        }
+    }
 
+    /**
+     * Se llama al conectarse. Si la partida está en marcha entra como espectador;
+     * si no, espera en el lobby a que un administrador la inicie.
+     */
+    public void join(Player player) {
+        UUID uuid = player.getUniqueId();
+        if (players.containsKey(uuid) || editors.contains(uuid) || !arena().isReady()
+                || !player.hasPermission("speedbuilders.jugar")) {
+            return;
+        }
+        Messages m = messages();
         GamePlayer gp = new GamePlayer(player, PlayerSnapshot.capture(player));
-        players.put(player.getUniqueId(), gp);
+        players.put(uuid, gp);
         Sidebar sidebar = new Sidebar(m.get("scoreboard.titulo"));
-        sidebars.put(player.getUniqueId(), sidebar);
+        sidebars.put(uuid, sidebar);
         player.setScoreboard(sidebar.scoreboard());
         player.showBossBar(bossBar);
 
-        if (running) {
+        if (state.isRunning()) {
             gp.setAlive(false);
             makeSpectator(player);
             m.send(player, "unido-espectador");
-            updateSidebars();
-            return;
-        }
-
-        gp.setAlive(true);
-        prepareLobby(player);
-        broadcast("unido", ph("jugador", player.getName()), ph("actual", players.size()),
-                ph("maximo", settings().maxPlayers()));
-        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
-
-        if (state == GameState.ESPERANDO && players.size() >= settings().minPlayers()) {
-            startCountdown();
-        } else if (state == GameState.INICIANDO && players.size() >= settings().maxPlayers() && ticksLeft > 200) {
-            ticksLeft = 200;
-            broadcast("partida-completa");
+        } else {
+            boolean full = waitingCount() >= settings().maxPlayers();
+            gp.setAlive(!full);
+            prepareLobby(player);
+            if (full) {
+                m.send(player, "partida-llena");
+            } else {
+                broadcast("unido", ph("jugador", player.getName()), ph("actual", waitingCount()),
+                        ph("maximo", settings().maxPlayers()));
+                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
+            }
         }
         updateSidebars();
     }
 
-    public void leave(Player player, boolean quit) {
+    /** Se llama al desconectarse (o al pasar a modo editor). */
+    public void leave(Player player) {
         GamePlayer gp = players.remove(player.getUniqueId());
         if (gp == null) {
-            if (!quit) {
-                messages().send(player, "no-en-partida");
-            }
             return;
         }
         boolean wasAlive = gp.isAlive();
         restore(player, gp);
-        if (!quit) {
-            messages().send(player, "has-salido");
-        }
 
         if (!state.isRunning()) {
-            broadcast("salio", ph("jugador", gp.name()), ph("actual", players.size()),
-                    ph("maximo", settings().maxPlayers()));
-            if (state == GameState.INICIANDO && players.size() < settings().minPlayers()) {
-                state = GameState.ESPERANDO;
-                broadcast("cuenta-cancelada");
+            if (wasAlive) {
+                broadcast("salio", ph("jugador", gp.name()), ph("actual", waitingCount()),
+                        ph("maximo", settings().maxPlayers()));
             }
             return;
         }
         if (players.isEmpty()) {
-            reset();
+            reset(true);
             return;
         }
         if (!wasAlive || state == GameState.FINALIZADO) {
@@ -234,13 +228,35 @@ public final class Game {
         }
     }
 
+    /**
+     * Modo editor para administradores: sale de la arena (recupera su inventario y modo
+     * de juego) para poder configurar o construir. Devuelve {@code true} si quedó activado.
+     */
+    public boolean toggleEditor(Player player) {
+        if (editors.remove(player.getUniqueId())) {
+            join(player);
+            return false;
+        }
+        enterEditor(player);
+        return true;
+    }
+
+    /** Activa el modo editor si no lo estaba. Devuelve {@code true} si se acaba de activar. */
+    public boolean enterEditor(Player player) {
+        if (!editors.add(player.getUniqueId())) {
+            return false;
+        }
+        leave(player);
+        return true;
+    }
+
     // ------------------------------------------------------------------
     // Control de administrador
     // ------------------------------------------------------------------
 
-    /** Inicia ya, sin esperar al mínimo de jugadores (útil para probar). */
+    /** Inicia la partida con los jugadores que esperan en el lobby. */
     public boolean forceStart() {
-        if (state.isRunning() || players.isEmpty()) {
+        if (state != GameState.ESPERANDO || waitingCount() == 0) {
             return false;
         }
         beginGame();
@@ -248,11 +264,11 @@ public final class Game {
     }
 
     public boolean stop() {
-        if (players.isEmpty() && platforms.isEmpty() && state == GameState.ESPERANDO) {
+        if (!state.isRunning()) {
             return false;
         }
         broadcast("partida-detenida");
-        reset();
+        reset(true);
         return true;
     }
 
@@ -264,7 +280,7 @@ public final class Game {
         }
         clearPreview();
         Settings s = settings();
-        for (Location location : PlatformLayout.compute(center, count, s.islandSize(), s.gap(), s.minRadius())) {
+        for (Location location : layout(center, count)) {
             Platform platform = new Platform(location, s);
             platform.build(s);
             previewPlatforms.add(platform);
@@ -292,6 +308,12 @@ public final class Game {
         return null;
     }
 
+    private List<Location> layout(Location center, int count) {
+        Settings s = settings();
+        return PlatformLayout.compute(center, count, s.islandSize(), s.gap(), s.minRadius(),
+                s.maxSingleRingRadius());
+    }
+
     // ------------------------------------------------------------------
     // Bucle principal (cada tick)
     // ------------------------------------------------------------------
@@ -304,14 +326,6 @@ public final class Game {
         switch (state) {
             case ESPERANDO -> {
             }
-            case INICIANDO -> {
-                ticksLeft--;
-                if (ticksLeft <= 0) {
-                    beginGame();
-                } else if (ticksLeft % 20 == 0) {
-                    countdownSecond(ticksLeft / 20);
-                }
-            }
             case MEMORIZANDO -> {
                 ticksLeft--;
                 if (ticksLeft <= 0) {
@@ -321,7 +335,7 @@ public final class Game {
                         playAll(Sound.BLOCK_NOTE_BLOCK_HAT, 1.4f);
                     }
                     if (tickCounter % 10 == 0) {
-                        actionBarAll(messages().get("actionbar.memorizando", ph("segundos", seconds())));
+                        actionBarAlive(messages().get("actionbar.memorizando", ph("segundos", seconds())));
                     }
                 }
             }
@@ -350,7 +364,7 @@ public final class Game {
                     celebrateWinner();
                 }
                 if (ticksLeft <= 0) {
-                    reset();
+                    reset(true);
                     return;
                 }
             }
@@ -374,53 +388,42 @@ public final class Game {
     // Fases
     // ------------------------------------------------------------------
 
-    private void startCountdown() {
-        state = GameState.INICIANDO;
-        ticksLeft = phaseTicks = settings().countdownSeconds() * 20;
-        broadcast("cuenta-regresiva", ph("segundos", settings().countdownSeconds()));
-        playAll(Sound.BLOCK_NOTE_BLOCK_PLING, 1f);
-    }
-
-    private void countdownSecond(int secondsLeft) {
-        if (secondsLeft == 30 || secondsLeft == 20 || secondsLeft == 10 || secondsLeft <= 5) {
-            broadcast("cuenta-regresiva", ph("segundos", secondsLeft));
-        }
-        if (secondsLeft <= 5) {
-            for (GamePlayer gp : players.values()) {
-                Player p = gp.player();
-                if (p != null) {
-                    title(p, "titulo.cuenta", "titulo.cuenta-sub", ph("segundos", secondsLeft));
-                }
-            }
-            playAll(Sound.BLOCK_NOTE_BLOCK_PLING, 0.8f + (5 - secondsLeft) * 0.15f);
-        }
-    }
-
     private void beginGame() {
         clearPreview();
         Settings s = settings();
-        List<GamePlayer> list = new ArrayList<>(players.values());
-        Collections.shuffle(list, random);
-        List<Location> centers = PlatformLayout.compute(arena().center(), list.size(),
-                s.islandSize(), s.gap(), s.minRadius());
+        List<GamePlayer> competitors = new ArrayList<>(alivePlayers());
+        Collections.shuffle(competitors, random);
+        Location center = arena().center();
+        List<Location> centers = layout(center, competitors.size());
 
-        for (int i = 0; i < list.size(); i++) {
-            GamePlayer gp = list.get(i);
+        double farthest = 0;
+        for (int i = 0; i < competitors.size(); i++) {
+            GamePlayer gp = competitors.get(i);
             Platform platform = new Platform(centers.get(i), s);
             platform.build(s);
             platforms.add(platform);
             gp.setPlatform(platform);
-            gp.setAlive(true);
+            farthest = Math.max(farthest, centers.get(i).distance(center));
             Player p = gp.player();
             if (p != null) {
                 p.teleport(platform.spawn());
                 prepareBuilder(p);
             }
         }
-        startingPlayers = list.size();
+        // Cuanto más grande la arena, más alto el punto de los espectadores.
+        spectatorPoint = center.clone().add(0.5, Math.max(14, farthest * 0.6), 0.5);
+        spectatorPoint.setPitch(farthest > 30 ? 90f : 70f);
+        for (GamePlayer gp : players.values()) {
+            Player p = gp.player();
+            if (!gp.isAlive() && p != null) {
+                makeSpectator(p);
+            }
+        }
+
+        startingPlayers = competitors.size();
         round = 0;
         usedBuilds.clear();
-        broadcast("partida-iniciada", ph("rondas", s.maxRounds()));
+        broadcast("partida-iniciada", ph("jugadores", startingPlayers), ph("rondas", s.maxRounds()));
         playAll(Sound.BLOCK_BEACON_ACTIVATE, 1f);
         nextRound();
     }
@@ -432,7 +435,7 @@ public final class Game {
         currentBuild = plugin.builds().pick(difficultyFor(round), usedBuilds, random);
         if (currentBuild == null) {
             broadcast("sin-construcciones");
-            reset();
+            reset(true);
             return;
         }
         usedBuilds.add(currentBuild.id());
@@ -579,7 +582,7 @@ public final class Game {
 
     private void endRound() {
         state = GameState.EVALUANDO;
-        ticksLeft = phaseTicks = settings().evaluationSeconds() * 20;
+        int evaluationTicks = settings().evaluationSeconds() * 20;
 
         List<GamePlayer> alive = alivePlayers();
         for (GamePlayer gp : alive) {
@@ -619,24 +622,28 @@ public final class Game {
         }
         playAll(Sound.BLOCK_NOTE_BLOCK_BASS, 0.6f);
 
-        // Eliminaciones escalonadas para darles dramatismo.
+        // Las eliminaciones se reparten a lo largo de la fase de resultados.
         int gen = generation;
-        int delay = 30;
+        int start = 40;
+        int step = eliminated.isEmpty() ? 0
+                : Math.max(1, Math.min(10, (evaluationTicks - start - 60) / eliminated.size()));
+        int delay = start;
         for (GamePlayer gp : eliminated) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (gen == generation && players.get(gp.uuid()) == gp) {
                     eliminateEffects(gp);
                 }
             }, delay);
-            delay += 8;
+            delay += step;
         }
-        ticksLeft = phaseTicks = Math.max(ticksLeft, delay + 20);
+        ticksLeft = phaseTicks = Math.max(evaluationTicks, delay + 40);
     }
 
     private void showResults(List<GamePlayer> ranking, List<GamePlayer> eliminated) {
         broadcastRaw("resultados.cabecera", ph("ronda", round), ph("construccion", currentBuild.name()));
-        int position = 1;
-        for (GamePlayer gp : ranking) {
+        int shown = Math.min(RESULT_LINES, ranking.size());
+        for (int i = 0; i < shown; i++) {
+            GamePlayer gp = ranking.get(i);
             String key;
             if (gp.isFinished()) {
                 key = "resultados.completado";
@@ -645,10 +652,14 @@ public final class Game {
             } else {
                 key = "resultados.salvado";
             }
-            broadcastRaw(key, ph("posicion", position++), ph("jugador", gp.name()),
+            broadcastRaw(key, ph("posicion", i + 1), ph("jugador", gp.name()),
                     ph("tiempo", formatSeconds(gp.finishMillis())), ph("porcentaje", formatPercent(gp.percent())));
         }
-        broadcastRaw("resultados.pie", ph("vivos", ranking.size() - eliminated.size()));
+        if (ranking.size() > shown) {
+            broadcastRaw("resultados.mas", ph("cantidad", ranking.size() - shown));
+        }
+        broadcastRaw("resultados.pie", ph("vivos", ranking.size() - eliminated.size()),
+                ph("eliminados", eliminated.size()));
     }
 
     private void eliminateEffects(GamePlayer gp) {
@@ -683,7 +694,12 @@ public final class Game {
         state = GameState.FINALIZADO;
         winner = champion;
         ticksLeft = phaseTicks = settings().endingSeconds() * 20;
-        actionBarAll(Component.empty());
+        for (GamePlayer gp : players.values()) {
+            Player p = gp.player();
+            if (p != null) {
+                p.sendActionBar(Component.empty());
+            }
+        }
 
         if (champion == null) {
             broadcastRaw("sin-ganador");
@@ -697,14 +713,6 @@ public final class Game {
         }
 
         broadcastRaw("ganador", ph("jugador", champion.name()), ph("ronda", round));
-        if (settings().announceWinner()) {
-            Component global = messages().prefixed("ganador-global", ph("jugador", champion.name()));
-            for (Player online : Bukkit.getOnlinePlayers()) {
-                if (!players.containsKey(online.getUniqueId())) {
-                    online.sendMessage(global);
-                }
-            }
-        }
         for (GamePlayer gp : players.values()) {
             Player p = gp.player();
             if (p == null) {
@@ -741,8 +749,13 @@ public final class Game {
         firework.setFireworkMeta(meta);
     }
 
-    /** Devuelve a todos a su estado original y limpia la arena. */
-    public void reset() {
+    /**
+     * Limpia la arena y devuelve a todos a su estado original.
+     *
+     * @param rejoin {@code true} para volver a meter a los conectados en el lobby
+     *               (al terminar una partida); {@code false} al apagar el servidor
+     */
+    public void reset(boolean rejoin) {
         generation++;
         for (GamePlayer gp : new ArrayList<>(players.values())) {
             Player p = gp.player();
@@ -761,6 +774,11 @@ public final class Game {
         ticksLeft = 0;
         currentBuild = null;
         winner = null;
+        spectatorPoint = null;
+        if (rejoin) {
+            // Un tick después, para no volver a meter a quien se está desconectando.
+            Bukkit.getScheduler().runTask(plugin, this::joinAll);
+        }
     }
 
     // ------------------------------------------------------------------
@@ -777,8 +795,7 @@ public final class Game {
 
     /** ¿Pertenece el bloque a alguna plataforma? */
     public boolean isArenaBlock(Block block) {
-        Location location = block.getLocation();
-        return platformAt(location) != null;
+        return platformAt(block.getLocation()) != null;
     }
 
     /** Si el jugador cae al vacío, vuelve a su plataforma o al lobby. */
@@ -822,6 +839,11 @@ public final class Game {
         return count;
     }
 
+    /** En el lobby, "vivos" son los que jugarán la próxima partida. */
+    private int waitingCount() {
+        return aliveCount();
+    }
+
     private void heal(Player player) {
         player.getInventory().clear();
         player.setHealth(20.0);
@@ -857,7 +879,8 @@ public final class Game {
     private void makeSpectator(Player player) {
         player.getInventory().clear();
         player.setGameMode(GameMode.SPECTATOR);
-        player.teleport(arena().spectatorPoint());
+        Location point = spectatorPoint != null ? spectatorPoint : arena().center().add(0.5, 14, 0.5);
+        player.teleport(point);
     }
 
     private void restore(Player player, GamePlayer gp) {
@@ -865,9 +888,8 @@ public final class Game {
         sidebars.remove(player.getUniqueId());
         player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         Location lobby = arena().lobby();
-        boolean toLobby = settings().returnToLobby() && lobby != null;
-        gp.snapshot().restore(player, !toLobby);
-        if (toLobby) {
+        gp.snapshot().restore(player, lobby == null);
+        if (lobby != null) {
             player.teleport(lobby);
         }
     }
@@ -908,10 +930,10 @@ public final class Game {
         }
     }
 
-    private void actionBarAll(Component component) {
+    private void actionBarAlive(Component component) {
         for (GamePlayer gp : players.values()) {
             Player p = gp.player();
-            if (p != null) {
+            if (p != null && gp.isAlive()) {
                 p.sendActionBar(component);
             }
         }
@@ -963,14 +985,9 @@ public final class Game {
         BossBar.Color color;
         switch (state) {
             case ESPERANDO -> {
-                name = m.get("bossbar.esperando", ph("actual", players.size()),
-                        ph("minimo", s.minPlayers()), ph("maximo", s.maxPlayers()));
-                progress = (float) players.size() / s.minPlayers();
+                name = m.get("bossbar.esperando", ph("actual", waitingCount()), ph("maximo", s.maxPlayers()));
+                progress = 1f;
                 color = BossBar.Color.YELLOW;
-            }
-            case INICIANDO -> {
-                name = m.get("bossbar.iniciando", ph("segundos", seconds()));
-                color = BossBar.Color.GREEN;
             }
             case MEMORIZANDO -> {
                 name = m.get("bossbar.memorizando", ph("construccion", currentBuild.name()),
@@ -983,7 +1000,7 @@ public final class Game {
                 color = ticksLeft <= 200 ? BossBar.Color.RED : BossBar.Color.GREEN;
             }
             case EVALUANDO -> {
-                name = m.get("bossbar.evaluando");
+                name = m.get("bossbar.evaluando", ph("segundos", seconds()));
                 color = BossBar.Color.PURPLE;
             }
             default -> {
@@ -1015,12 +1032,12 @@ public final class Game {
         raw.add("<dark_gray>" + LocalDate.now().format(DATE) + " <gray>• <dark_gray>Speed Builders");
         raw.add("");
         if (!state.isRunning()) {
-            raw.add("<gray>Jugadores: <white>" + players.size() + "<dark_gray>/<gray>" + s.maxPlayers());
-            raw.add("<gray>Mínimo: <white>" + s.minPlayers());
+            raw.add("<gray>Jugadores: <white>" + waitingCount() + "<dark_gray>/<gray>" + s.maxPlayers());
             raw.add("");
-            raw.add(state == GameState.INICIANDO
-                    ? "<gray>Inicia en: <green>" + seconds() + "s"
-                    : "<yellow>Esperando jugadores...");
+            raw.add("<yellow>Esperando inicio...");
+            if (!gp.isAlive()) {
+                raw.add("<red>Partida llena: espectador");
+            }
         } else {
             raw.add("<gray>Ronda: <white>" + round + "<dark_gray>/<gray>" + s.maxRounds());
             raw.add("<gray>Vivos: <green>" + aliveCount());

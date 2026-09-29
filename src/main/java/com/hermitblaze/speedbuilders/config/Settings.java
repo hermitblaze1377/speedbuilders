@@ -11,9 +11,7 @@ import java.util.logging.Logger;
 
 /** Valores de config.yml ya validados. */
 public record Settings(
-        int minPlayers,
         int maxPlayers,
-        int countdownSeconds,
         int memorizeSeconds,
         int evaluationSeconds,
         int endingSeconds,
@@ -23,14 +21,13 @@ public record Settings(
         int border,
         int gap,
         int minRadius,
+        int maxSingleRingRadius,
         int zoneHeight,
         Material zoneMaterial,
         Material ringMaterial,
         Material edgeMaterial,
         Material cornerMaterial,
-        Material baseMaterial,
-        boolean returnToLobby,
-        boolean announceWinner
+        Material baseMaterial
 ) {
 
     public int buildSeconds(Difficulty difficulty) {
@@ -48,15 +45,10 @@ public record Settings(
         buildSeconds.put(Difficulty.MEDIO, Math.max(5, c.getInt("tiempos.construir.MEDIO", 70)));
         buildSeconds.put(Difficulty.DIFICIL, Math.max(5, c.getInt("tiempos.construir.DIFICIL", 95)));
 
-        int min = Math.max(1, c.getInt("jugadores.minimos", 2));
-        int max = Math.max(min, c.getInt("jugadores.maximos", 16));
-
         return new Settings(
-                min,
-                max,
-                Math.max(3, c.getInt("tiempos.cuenta-regresiva", 30)),
+                Math.max(1, c.getInt("jugadores.maximos", 128)),
                 Math.max(3, c.getInt("tiempos.memorizar", 20)),
-                Math.max(2, c.getInt("tiempos.evaluacion", 6)),
+                Math.max(3, c.getInt("tiempos.evaluacion", 15)),
                 Math.max(3, c.getInt("tiempos.final", 10)),
                 buildSeconds,
                 Math.max(1, c.getInt("rondas.maximas", 10)),
@@ -64,14 +56,13 @@ public record Settings(
                 Math.max(1, c.getInt("plataformas.borde", 2)),
                 Math.max(1, c.getInt("plataformas.separacion", 4)),
                 Math.max(4, c.getInt("plataformas.radio-minimo", 12)),
+                Math.max(10, c.getInt("plataformas.radio-maximo-un-anillo", 60)),
                 Math.min(10, Math.max(3, c.getInt("plataformas.altura-zona", 6))),
                 material(c, "plataformas.materiales.zona", Material.WHITE_CONCRETE, log),
                 material(c, "plataformas.materiales.anillo", Material.LIGHT_GRAY_CONCRETE, log),
                 material(c, "plataformas.materiales.borde", Material.CYAN_CONCRETE, log),
                 material(c, "plataformas.materiales.esquinas", Material.SEA_LANTERN, log),
-                material(c, "plataformas.materiales.base", Material.GRAY_CONCRETE, log),
-                c.getBoolean("al-terminar-ir-al-lobby", true),
-                c.getBoolean("anunciar-ganador-global", true)
+                material(c, "plataformas.materiales.base", Material.GRAY_CONCRETE, log)
         );
     }
 

@@ -18,6 +18,7 @@ import org.bukkit.event.block.LeavesDecayEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
@@ -119,8 +120,19 @@ public final class GameListener implements Listener {
         }
     }
 
+    /** Todos entran a la arena al conectarse (con un pequeño retraso para que carguen). */
+    @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        Player player = event.getPlayer();
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            if (player.isOnline()) {
+                game().join(player);
+            }
+        }, 5L);
+    }
+
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        game().leave(event.getPlayer(), true);
+        game().leave(event.getPlayer());
     }
 }

@@ -38,6 +38,9 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
             command.setTabCompleter(executor);
         }
 
+        // Mete en la arena a quienes ya estaban conectados (por ejemplo tras un /reload).
+        getServer().getScheduler().runTask(this, game::joinAll);
+
         getLogger().info("SpeedBuilders activado con " + builds.all().size() + " construcciones.");
     }
 

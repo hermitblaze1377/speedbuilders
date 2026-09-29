@@ -6,15 +6,15 @@ Los jugadores memorizan una construcción que aparece durante 20 segundos en su 
 
 ## Cómo se juega
 
-1. **Lobby**: los jugadores entran con `/sb unirse`. Al llegar al mínimo empieza una cuenta atrás con títulos, sonidos, bossbar y scoreboard.
-2. **Plataformas**: se generan en círculo, **simétricas alrededor del centro**, una por jugador y con espacio entre ellas. Cada isla tiene una zona de construcción de **5x5** rodeada de un borde decorativo.
+1. **Lobby**: todos los jugadores entran automáticamente a la arena al conectarse (hasta 128 por partida; quien sobra o llega con la partida en curso entra como espectador). La partida solo empieza cuando un administrador usa `/sb iniciar`.
+2. **Plataformas**: se generan **simétricas alrededor del centro**, una por jugador y con espacio entre ellas: en un círculo si son pocas, o en anillos concéntricos si son muchas. Cada isla tiene una zona de construcción de **5x5** rodeada de un borde decorativo.
 3. **Memorizar (20 s)**: aparece en cada plataforma una construcción con nombre en español (*Pirámide*, *Casita de madera*, *Templo griego*...).
 4. **Construir**: la construcción desaparece y cada jugador recibe justo los bloques que necesita. La **action bar** muestra en tiempo real el **% de similitud** con una barra de colores.
    - Al llegar al 100 % el jugador **clasifica** y recibe título, sonido y partículas.
    - Solo clasifica un número limitado de jugadores (el cupo). Cuando se llena, la ronda termina y **los demás quedan eliminados**.
    - Si se acaba el tiempo, **quien no la completó queda eliminado**.
-5. **Resultados**: se muestra la clasificación de la ronda, y las islas de los eliminados explotan. Los eliminados pasan a **espectador**.
-6. **Final**: gana el último en pie, con fuegos artificiales. Después todos recuperan su inventario, modo de juego y posición originales.
+5. **Resultados (15 s)**: se muestra la clasificación de la ronda, y las islas de los eliminados explotan una tras otra. Los eliminados pasan a **espectador**.
+6. **Final**: gana el último en pie, con fuegos artificiales. Después todos vuelven al lobby para la siguiente partida.
 
 ### Reglas de eliminación
 
@@ -51,18 +51,17 @@ Lo recomendado es usar un mundo vacío (void), porque las plataformas reemplazan
 /sb limpiar           # quitar las plataformas de prueba
 ```
 
-Para probar solo, únete con `/sb unirse` y fuerza el inicio con `/sb iniciar`.
+Mientras configuras quedas en **modo editor**, fuera de la arena y con tu inventario. Cuando termines, usa `/sb editar` para entrar al lobby y `/sb iniciar` para empezar (también sirve para probar solo).
 
 ## Comandos
 
 | Comando | Descripción | Permiso |
 |---------|-------------|---------|
-| `/sb unirse` | Unirse a la partida (como espectador si ya empezó) | `speedbuilders.jugar` |
-| `/sb salir` | Salir de la partida | `speedbuilders.jugar` |
+| `/sb iniciar` | Inicia la partida con los jugadores del lobby | `speedbuilders.admin` |
+| `/sb editar` | Sale o entra de la arena para configurar y construir | `speedbuilders.admin` |
 | `/sb setcentro` | Fija el centro de la arena | `speedbuilders.admin` |
 | `/sb setlobby` | Fija el lobby de espera | `speedbuilders.admin` |
-| `/sb iniciar` | Fuerza el inicio | `speedbuilders.admin` |
-| `/sb detener` | Detiene la partida y limpia la arena | `speedbuilders.admin` |
+| `/sb detener` | Detiene la partida y vuelve todos al lobby | `speedbuilders.admin` |
 | `/sb generar [n]` | Genera `n` plataformas de prueba | `speedbuilders.admin` |
 | `/sb limpiar` | Quita las plataformas de prueba | `speedbuilders.admin` |
 | `/sb pegar <id>` | Coloca una construcción en la plataforma donde estás | `speedbuilders.admin` |

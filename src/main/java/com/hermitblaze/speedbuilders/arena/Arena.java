@@ -72,11 +72,4 @@ public final class Arena {
         this.lobby = location.clone();
         save();
     }
-
-    /** Punto elevado sobre el centro desde el que observan los espectadores. */
-    public Location spectatorPoint() {
-        Location point = center.clone().add(0.5, 14, 0.5);
-        point.setPitch(70f);
-        return point;
-    }
 }
