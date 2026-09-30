@@ -201,7 +201,9 @@ public final class SpeedBuildersCommand implements TabExecutor {
         try {
             Build build = plugin.builds().save(id, name, difficulty, captured);
             m.send(player, "construccion-guardada", ph("id", build.id()), ph("construccion", build.name()),
-                    ph("bloques", build.blockCount()));
+                    ph("bloques", build.blockCount()),
+                    ph("archivo", "construcciones/" + difficulty.name().toLowerCase(Locale.ROOT) + "/"
+                            + build.id() + ".yml"));
         } catch (IOException | IllegalStateException ex) {
             m.send(player, "error-guardar", ph("error", ex.getMessage()));
         }

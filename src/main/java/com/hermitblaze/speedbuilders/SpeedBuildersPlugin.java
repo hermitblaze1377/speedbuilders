@@ -62,7 +62,7 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
         reloadConfig();
         settings = Settings.from(getConfig(), getLogger());
         messages.reload();
-        builds.load();
+        builds.load(settings.zoneHeight());
         records.load();
         arena.load();
     }

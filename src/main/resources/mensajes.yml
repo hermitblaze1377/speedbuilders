@@ -149,11 +149,11 @@ dificultad-invalida: "<red>Dificultad inválida. Usa <white>facil</white>, <whit
 construccion-no-existe: "<red>No existe la construcción <white><id></white>."
 construccion-pegada: "<green>Construcción <white><construccion></white> colocada en la plataforma."
 zona-vacia: "<red>La zona de construcción de esta plataforma está vacía."
-construccion-guardada: "<green>Construcción <white><construccion></white> <dark_gray>(<id>)</dark_gray> guardada con <white><bloques></white> bloques."
+construccion-guardada: "<green>Construcción <white><construccion></white> guardada con <white><bloques></white> bloques en <white><archivo></white>. Ya está disponible."
 error-guardar: "<red>No se pudo guardar: <white><error>"
 lista-cabecera: "<gold>Construcciones cargadas: <white><cantidad>"
 lista-linea: "  <dificultad><dark_gray>: <gray><construcciones>"
-recargado: "<green>Configuración recargada. <white><cantidad></white> construcciones cargadas."
+recargado: "<green>Configuración recargada. <white><cantidad></white> construcciones cargadas. <gray>(Si falta alguna de la carpeta, la consola indica el motivo.)"
 no-recargar-en-partida: "<red>No puedes recargar durante una partida."
 
 # ---------------- Ayuda ----------------

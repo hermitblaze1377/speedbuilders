@@ -89,8 +89,30 @@ Mientras configuras quedas en **modo editor**, fuera de la arena y con tu invent
 
 - `config.yml`: jugadores, tiempos, rondas, porcentaje de eliminación y materiales de las plataformas.
 - `mensajes.yml`: todos los textos, en [MiniMessage](https://docs.advntr.dev/minimessage/format.html) (chat, títulos, action bar, bossbar y scoreboard).
-- `construcciones.yml`: incluye 36 construcciones (14 fáciles, 14 medias y 8 difíciles) en un formato de capas fácil de editar.
+- Construcciones incluidas: **65** (21 fáciles, 28 medias y 16 difíciles). Van dentro del plugin, así que se actualizan solas con cada versión. Si quieres añadir o reemplazar algunas, usa la carpeta `construcciones/` (o un `construcciones.yml` propio en la carpeta del plugin).
 - `arena.yml`: centro y lobby (se genera solo).
+
+### Carpeta de construcciones (schems)
+
+Al arrancar, el plugin crea `plugins/SpeedBuilders/construcciones/` con tres subcarpetas:
+
+```
+construcciones/
+  facil/
+  medio/
+  dificil/
+  LEEME.txt
+```
+
+Pon cada construcción en la subcarpeta de su dificultad y usa `/sb recargar`:
+
+- **`.schem`** (WorldEdit 7 o FAWE): selecciona la construcción, usa `//copy` y luego `//schem save <nombre>`, y copia el archivo desde `plugins/WorldEdit/schematics/`.
+  - La base debe medir como máximo **5x5** y la altura no puede superar `altura-zona` (6).
+  - El aire sobrante se recorta y, si la base es menor, se centra.
+  - El nombre del archivo es el que ven los jugadores: `Casa de campo.schem` se muestra como *Casa de campo*.
+- **`.yml`**: una construcción con el formato de capas (el mismo de `construcciones.yml`).
+
+Si un archivo tiene algún problema (demasiado grande, bloque desconocido...), la consola indica el motivo y se ignora.
 
 ### Crear construcciones desde el juego
 
@@ -98,7 +120,7 @@ Mientras configuras quedas en **modo editor**, fuera de la arena y con tu invent
 2. Construye dentro de la zona blanca de 5x5.
 3. Ejecuta `/sb guardar molino dificil Molino de viento`.
 
-Estará disponible al instante y queda guardada en `construcciones.yml`.
+Queda guardada en `construcciones/dificil/molino.yml` y está disponible al instante.
 
 ## Compilar
 

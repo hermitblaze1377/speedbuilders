@@ -512,3 +512,409 @@ construcciones:
       - ["NNNNN", "WPPPE", "WPPPE", "WPPPE", "SSSSS"]
       - [".....", ".NNN.", ".WPE.", ".SSS.", "....."]
       - [".....", ".....", "..C..", ".....", "....."]
+
+  # =================== NUEVAS (más variadas y complejas) ===================
+
+  bandera_espana:
+    nombre: "Bandera de España"
+    dificultad: FACIL
+    paleta:
+      "R": "minecraft:red_wool"
+      "Y": "minecraft:yellow_wool"
+    capas:
+      - [".....", ".....", "RRRRR", ".....", "....."]
+      - [".....", ".....", "YYYYY", ".....", "....."]
+      - [".....", ".....", "YYYYY", ".....", "....."]
+      - [".....", ".....", "RRRRR", ".....", "....."]
+
+  bandera_argentina:
+    nombre: "Bandera de Argentina"
+    dificultad: FACIL
+    paleta:
+      "U": "minecraft:light_blue_wool"
+      "W": "minecraft:white_wool"
+      "Y": "minecraft:yellow_wool"
+    capas:
+      - [".....", ".....", "UUUUU", ".....", "....."]
+      - [".....", ".....", "WWYWW", ".....", "....."]
+      - [".....", ".....", "UUUUU", ".....", "....."]
+
+  bandera_colombia:
+    nombre: "Bandera de Colombia"
+    dificultad: FACIL
+    paleta:
+      "R": "minecraft:red_wool"
+      "B": "minecraft:blue_wool"
+      "Y": "minecraft:yellow_wool"
+    capas:
+      - [".....", ".....", "RRRRR", ".....", "....."]
+      - [".....", ".....", "BBBBB", ".....", "....."]
+      - [".....", ".....", "YYYYY", ".....", "....."]
+      - [".....", ".....", "YYYYY", ".....", "....."]
+
+  bandera_mexico:
+    nombre: "Bandera de México"
+    dificultad: FACIL
+    paleta:
+      "G": "minecraft:green_wool"
+      "W": "minecraft:white_wool"
+      "R": "minecraft:red_wool"
+      "N": "minecraft:brown_wool"
+    capas:
+      - [".....", ".....", "GGWRR", ".....", "....."]
+      - [".....", ".....", "GGNRR", ".....", "....."]
+      - [".....", ".....", "GGWRR", ".....", "....."]
+
+  cactus:
+    nombre: "Cactus"
+    dificultad: FACIL
+    paleta:
+      "G": "minecraft:green_concrete"
+      "T": "minecraft:terracotta"
+    capas:
+      - [".....", ".....", "..T..", ".....", "....."]
+      - [".....", ".....", "GGGGG", ".....", "....."]
+      - [".....", ".....", "G.G.G", ".....", "....."]
+      - [".....", ".....", "G.G.G", ".....", "....."]
+      - [".....", ".....", "..G..", ".....", "....."]
+
+  ancla:
+    nombre: "Ancla"
+    dificultad: FACIL
+    paleta:
+      "I": "minecraft:iron_block"
+    capas:
+      - [".....", ".....", "IIIII", ".....", "....."]
+      - [".....", ".....", "I.I.I", ".....", "....."]
+      - [".....", ".....", "..I..", ".....", "....."]
+      - [".....", ".....", ".III.", ".....", "....."]
+      - [".....", ".....", "..I..", ".....", "....."]
+      - [".....", ".....", "..I..", ".....", "....."]
+
+  espada:
+    nombre: "Espada de diamante"
+    dificultad: FACIL
+    paleta:
+      "B": "minecraft:stripped_oak_log[axis=y]"
+      "G": "minecraft:gold_block"
+      "D": "minecraft:diamond_block"
+    capas:
+      - [".....", ".....", "..B..", ".....", "....."]
+      - [".....", ".....", "..B..", ".....", "....."]
+      - [".....", ".....", ".GGG.", ".....", "....."]
+      - [".....", ".....", "..D..", ".....", "....."]
+      - [".....", ".....", "..D..", ".....", "....."]
+      - [".....", ".....", "..D..", ".....", "....."]
+
+  tren:
+    nombre: "Tren"
+    dificultad: MEDIO
+    paleta:
+      "K": "minecraft:black_concrete"
+      "R": "minecraft:red_concrete"
+      "G": "minecraft:glass"
+      "C": "minecraft:cobblestone"
+      "W": "minecraft:white_wool"
+    capas:
+      - [".....", "K.K.K", "RRRRR", "K.K.K", "....."]
+      - [".....", "RRRRR", "RRRRR", "RRRRR", "....."]
+      - [".....", "KG...", "KG..C", "KG...", "....."]
+      - [".....", "KK...", "KK..W", "KK...", "....."]
+
+  cerezo:
+    nombre: "Cerezo en flor"
+    dificultad: MEDIO
+    paleta:
+      "O": "minecraft:cherry_log[axis=y]"
+      "L": "minecraft:cherry_leaves[persistent=true]"
+    capas:
+      - [".....", ".....", "..O..", ".....", "....."]
+      - [".....", ".....", "..O..", ".....", "....."]
+      - [".....", ".....", "..O..", ".....", "....."]
+      - [".LLL.", "LLLLL", "LLOLL", "LLLLL", ".LLL."]
+      - [".....", ".LLL.", ".LLL.", ".LLL.", "....."]
+      - [".....", ".....", "..L..", ".....", "....."]
+
+  totem:
+    nombre: "Tótem"
+    dificultad: MEDIO
+    paleta:
+      "O": "minecraft:spruce_log[axis=y]"
+      "C": "minecraft:carved_pumpkin[facing=south]"
+      "W": "minecraft:orange_wool"
+      "G": "minecraft:gold_block"
+    capas:
+      - [".....", ".....", "..O..", ".....", "....."]
+      - [".....", ".....", "..C..", ".....", "....."]
+      - [".....", ".....", "WWOWW", ".....", "....."]
+      - [".....", ".....", "..C..", ".....", "....."]
+      - [".....", ".....", "..O..", ".....", "....."]
+      - [".....", ".....", "..G..", ".....", "....."]
+
+  estatua:
+    nombre: "Estatua de Steve"
+    dificultad: MEDIO
+    paleta:
+      "B": "minecraft:blue_wool"
+      "C": "minecraft:cyan_wool"
+      "S": "minecraft:orange_terracotta"
+      "N": "minecraft:brown_wool"
+    capas:
+      - [".....", ".....", ".B.B.", ".....", "....."]
+      - [".....", ".....", ".B.B.", ".....", "....."]
+      - [".....", ".....", "SCCCS", ".....", "....."]
+      - [".....", ".....", "SCCCS", ".....", "....."]
+      - [".....", ".....", ".SSS.", ".....", "....."]
+      - [".....", ".....", ".NNN.", ".....", "....."]
+
+  castillo_arena:
+    nombre: "Castillo de arena"
+    dificultad: MEDIO
+    paleta:
+      "C": "minecraft:chiseled_sandstone"
+      "S": "minecraft:sandstone"
+      "T": "minecraft:sandstone_slab[type=bottom]"
+    capas:
+      - ["CSSSC", "S...S", "S...S", "S...S", "CS.SC"]
+      - ["C...C", ".....", ".....", ".....", "C...C"]
+      - ["T...T", ".....", ".....", ".....", "T...T"]
+
+  ovni:
+    nombre: "Platillo volador"
+    dificultad: MEDIO
+    paleta:
+      "I": "minecraft:iron_block"
+      "L": "minecraft:sea_lantern"
+      "G": "minecraft:light_blue_stained_glass"
+    capas:
+      - [".....", ".....", "..I..", ".....", "....."]
+      - [".III.", "IIIII", "IILII", "IIIII", ".III."]
+      - [".....", ".GGG.", ".GGG.", ".GGG.", "....."]
+      - [".....", ".....", "..G..", ".....", "....."]
+
+  jardin_zen:
+    nombre: "Jardín zen"
+    dificultad: MEDIO
+    paleta:
+      "M": "minecraft:moss_block"
+      "W": "minecraft:blue_stained_glass"
+      "S": "minecraft:stone"
+      "L": "minecraft:lantern[hanging=false]"
+    capas:
+      - ["MMWMM", "MWWWM", "WWSWW", "MWWWM", "MMWMM"]
+      - [".....", ".....", "..L..", ".....", "....."]
+
+  piramide_azteca:
+    nombre: "Pirámide azteca"
+    dificultad: MEDIO
+    paleta:
+      "M": "minecraft:mossy_stone_bricks"
+      "S": "minecraft:stone_bricks"
+      "E": "minecraft:stone_brick_stairs[facing=north,half=bottom]"
+      "G": "minecraft:gold_block"
+    capas:
+      - ["MMMMM", "MMMMM", "MMMMM", "MMMMM", "MMEMM"]
+      - [".....", ".SSS.", ".SSS.", ".SES.", "....."]
+      - [".....", ".....", "..G..", ".....", "....."]
+
+  portal_end:
+    nombre: "Portal del End"
+    dificultad: MEDIO
+    paleta:
+      "F": "minecraft:end_stone_bricks"
+      "E": "minecraft:end_stone"
+      "K": "minecraft:black_concrete"
+    capas:
+      - ["EFFFE", "FKKKF", "FKKKF", "FKKKF", "EFFFE"]
+
+  robot:
+    nombre: "Robot"
+    dificultad: MEDIO
+    paleta:
+      "I": "minecraft:iron_block"
+      "G": "minecraft:gray_concrete"
+      "R": "minecraft:redstone_block"
+      "L": "minecraft:sea_lantern"
+      "A": "minecraft:lightning_rod[facing=up]"
+    capas:
+      - [".....", ".....", ".I.I.", ".....", "....."]
+      - [".....", ".....", ".I.I.", ".....", "....."]
+      - [".....", ".....", "GIRIG", ".....", "....."]
+      - [".....", ".....", "GIIIG", ".....", "....."]
+      - [".....", ".....", ".LIL.", ".....", "....."]
+      - [".....", ".....", "..A..", ".....", "....."]
+
+  pinguino:
+    nombre: "Pingüino"
+    dificultad: MEDIO
+    paleta:
+      "K": "minecraft:black_wool"
+      "W": "minecraft:white_wool"
+      "O": "minecraft:orange_wool"
+    capas:
+      - [".....", ".KKK.", ".KWK.", ".O.O.", "....."]
+      - [".....", ".KKK.", "KKWKK", ".....", "....."]
+      - [".....", ".KKK.", ".KWK.", ".....", "....."]
+      - [".....", ".KKK.", ".WKW.", "..O..", "....."]
+
+  cerdito:
+    nombre: "Cerdito"
+    dificultad: MEDIO
+    paleta:
+      "P": "minecraft:pink_wool"
+      "N": "minecraft:pink_terracotta"
+    capas:
+      - [".....", ".P.P.", ".....", ".P.P.", "....."]
+      - [".....", ".PPP.", ".PPP.", ".PPP.", "....."]
+      - ["..P..", ".PPP.", ".PPP.", ".PPP.", "..N.."]
+
+  escudo:
+    nombre: "Escudo"
+    dificultad: MEDIO
+    paleta:
+      "I": "minecraft:iron_block"
+      "R": "minecraft:red_concrete"
+      "Y": "minecraft:gold_block"
+    capas:
+      - [".....", ".....", "..I..", ".....", "....."]
+      - [".....", ".....", ".IRI.", ".....", "....."]
+      - [".....", ".....", "IRYRI", ".....", "....."]
+      - [".....", ".....", "IRRRI", ".....", "....."]
+      - [".....", ".....", "IIIII", ".....", "....."]
+
+  barco_pirata:
+    nombre: "Barco pirata"
+    dificultad: MEDIO
+    paleta:
+      "P": "minecraft:dark_oak_planks"
+      "F": "minecraft:dark_oak_fence"
+      "B": "minecraft:black_wool"
+      "R": "minecraft:red_wool"
+    capas:
+      - [".....", "..P..", "..P..", "..P..", "....."]
+      - ["..P..", ".PPP.", ".PPP.", ".PPP.", "..P.."]
+      - [".....", ".F.F.", "..F..", ".F.F.", "....."]
+      - [".....", ".....", ".BFB.", ".....", "....."]
+      - [".....", ".....", ".BFB.", ".....", "....."]
+      - [".....", ".....", "..FR.", ".....", "....."]
+
+  cabana_troncos:
+    nombre: "Cabaña de troncos"
+    dificultad: DIFICIL
+    paleta:
+      "O": "minecraft:spruce_log[axis=y]"
+      "P": "minecraft:spruce_planks"
+      "G": "minecraft:glass"
+      "S": "minecraft:spruce_slab[type=bottom]"
+    capas:
+      - ["OPPPO", "P...P", "P...P", "P...P", "OP.PO"]
+      - ["OPGPO", "P...P", "G...G", "P...P", "OP.PO"]
+      - ["OPPPO", "P...P", "P...P", "P...P", "OPPPO"]
+      - ["SSSSS", "SSSSS", "SSSSS", "SSSSS", "SSSSS"]
+
+  globo:
+    nombre: "Globo aerostático"
+    dificultad: DIFICIL
+    paleta:
+      "P": "minecraft:spruce_planks"
+      "F": "minecraft:oak_fence"
+      "R": "minecraft:red_wool"
+      "Y": "minecraft:yellow_wool"
+    capas:
+      - [".....", ".PPP.", ".PPP.", ".PPP.", "....."]
+      - [".....", ".F.F.", ".....", ".F.F.", "....."]
+      - [".RYR.", "RYRYR", "YRYRY", "RYRYR", ".RYR."]
+      - [".YRY.", "YRYRY", "RYRYR", "YRYRY", ".YRY."]
+      - [".....", ".RYR.", ".YRY.", ".RYR.", "....."]
+
+  cofre:
+    nombre: "Cofre del tesoro"
+    dificultad: DIFICIL
+    paleta:
+      "O": "minecraft:spruce_log[axis=y]"
+      "P": "minecraft:spruce_planks"
+      "G": "minecraft:gold_block"
+      "S": "minecraft:spruce_slab[type=bottom]"
+    capas:
+      - [".....", "OPPPO", "PPPPP", "OPPPO", "....."]
+      - [".....", "OPPPO", "P...P", "OPGPO", "....."]
+      - [".....", "SSSSS", "SSSSS", "SSSSS", "....."]
+
+  hamburguesa:
+    nombre: "Hamburguesa"
+    dificultad: DIFICIL
+    paleta:
+      "B": "minecraft:orange_terracotta"
+      "G": "minecraft:lime_wool"
+      "M": "minecraft:brown_concrete"
+      "Y": "minecraft:yellow_concrete"
+    capas:
+      - [".....", ".BBB.", ".BBB.", ".BBB.", "....."]
+      - ["..G..", ".GGG.", "GGGGG", ".GGG.", "..G.."]
+      - [".....", ".MMM.", ".MMM.", ".MMM.", "....."]
+      - ["..Y..", ".YYY.", "YYYYY", ".YYY.", "..Y.."]
+      - [".....", ".BBB.", ".BBB.", ".BBB.", "....."]
+      - [".....", ".....", "..B..", ".....", "....."]
+
+  torre_reloj:
+    nombre: "Torre del reloj"
+    dificultad: DIFICIL
+    paleta:
+      "B": "minecraft:stone_bricks"
+      "C": "minecraft:gold_block"
+      "P": "minecraft:dark_oak_planks"
+      "N": "minecraft:dark_oak_stairs[facing=south,half=bottom]"
+      "S": "minecraft:dark_oak_stairs[facing=north,half=bottom]"
+      "W": "minecraft:dark_oak_stairs[facing=east,half=bottom]"
+      "E": "minecraft:dark_oak_stairs[facing=west,half=bottom]"
+      "T": "minecraft:end_rod[facing=up]"
+    capas:
+      - [".....", ".BBB.", ".B.B.", ".B.B.", "....."]
+      - [".....", ".BBB.", ".B.B.", ".BBB.", "....."]
+      - [".....", ".BBB.", ".B.B.", ".BCB.", "....."]
+      - [".....", ".BBB.", ".BBB.", ".BBB.", "....."]
+      - [".....", ".NNN.", ".WPE.", ".SSS.", "....."]
+      - [".....", ".....", "..T..", ".....", "....."]
+
+  casa_arbol:
+    nombre: "Casa del árbol"
+    dificultad: DIFICIL
+    paleta:
+      "O": "minecraft:oak_log[axis=y]"
+      "P": "minecraft:oak_planks"
+      "F": "minecraft:oak_fence"
+      "L": "minecraft:oak_leaves[persistent=true]"
+    capas:
+      - [".....", ".....", "..O..", ".....", "....."]
+      - [".....", ".....", "..O..", ".....", "....."]
+      - [".....", ".PPP.", ".POP.", ".PPP.", "....."]
+      - [".....", ".F.F.", "..O..", ".F.F.", "....."]
+      - [".LLL.", "LLLLL", "LLOLL", "LLLLL", ".LLL."]
+      - [".....", ".LLL.", ".LLL.", ".LLL.", "....."]
+
+  torre_eiffel:
+    nombre: "Torre Eiffel"
+    dificultad: DIFICIL
+    paleta:
+      "I": "minecraft:iron_block"
+      "T": "minecraft:end_rod[facing=up]"
+    capas:
+      - ["II.II", "I...I", ".....", "I...I", "II.II"]
+      - [".I.I.", "II.II", ".....", "II.II", ".I.I."]
+      - [".....", ".III.", ".III.", ".III.", "....."]
+      - [".....", ".....", "..I..", ".....", "....."]
+      - [".....", ".....", "..I..", ".....", "....."]
+      - [".....", ".....", "..T..", ".....", "....."]
+
+  mercado:
+    nombre: "Puesto de mercado"
+    dificultad: DIFICIL
+    paleta:
+      "F": "minecraft:oak_fence"
+      "C": "minecraft:oak_planks"
+      "R": "minecraft:red_wool"
+      "W": "minecraft:white_wool"
+    capas:
+      - ["F...F", ".....", ".....", "FCCCF", "....."]
+      - ["F...F", ".....", ".....", "F...F", "....."]
+      - ["RWRWR", "RWRWR", "RWRWR", "RWRWR", "RWRWR"]
