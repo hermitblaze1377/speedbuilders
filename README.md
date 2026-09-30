@@ -13,8 +13,21 @@ Los jugadores memorizan una construcción que aparece durante 20 segundos en su 
    - Al llegar al 100 % el jugador **clasifica** y recibe título, sonido y partículas.
    - Solo clasifica un número limitado de jugadores (el cupo). Cuando se llena, la ronda termina y **los demás quedan eliminados**.
    - Si se acaba el tiempo, **quien no la completó queda eliminado**.
-5. **Resultados (15 s)**: se muestra la clasificación de la ronda, y las islas de los eliminados explotan una tras otra. Los eliminados pasan a **espectador**.
-6. **Final**: gana el último en pie, con fuegos artificiales. Después todos vuelven al lobby para la siguiente partida.
+5. **Resultados (15 s)**: se muestra la clasificación de la ronda con los puntos de cada uno, la lista de eliminados con el **puesto en que quedaron**, y las islas de los eliminados explotan una tras otra.
+   - En la siguiente ronda, las islas de los que siguen en juego se reconstruyen **más cerca del centro**.
+   - Nadie puede alejarse más de 3 bloques de su isla (`distancia-maxima`). Los eliminados pasan a **espectador**.
+6. **Final**: gana el último en pie, con fuegos artificiales, y se muestra el top 5 de la partida. Después todos vuelven al lobby para la siguiente partida.
+
+### Puntos y récords
+
+- **Puntos por orden de llegada**: 1.º 10, 2.º 8, 3.º 6, 4.º 5, 5.º 4 y el resto 3; el ganador suma 25 más (configurable en `puntos`).
+- **Récords históricos**: al mostrar cada construcción, el chat enseña su top 5 de mejores tiempos de siempre. Si alguien bate el récord se anuncia. Se guardan en `records.yml`.
+
+### Panel para operadores
+
+- **Hologramas** sobre cada plataforma con el nombre, la barra de progreso, el porcentaje y los puntos de cada jugador. Solo los ven quienes tienen `speedbuilders.admin`.
+- **Scoreboard de operador** con el top 5 de puntos en vivo (también en modo editor).
+- `/sb top`: tabla con el top 5 de puntos y su progreso. `/sb progreso`: el porcentaje de cada jugador vivo.
 
 ### Reglas de eliminación
 
@@ -29,9 +42,10 @@ Se compara bloque a bloque la zona de 5x5 con la construcción original:
 
 | Caso | Puntos |
 |------|--------|
-| Bloque exacto (incluida la orientación que exige la construcción) | 1 |
-| Bloque correcto pero mal orientado | 0,5 |
+| Bloque correcto | 1 |
 | Bloque que falta o que sobra | 0 |
+
+Por defecto la **orientación no cuenta** (escaleras, troncos, calabazas, conexiones de vallas...), porque depende de cómo se coloca el bloque y podía impedir llegar al 100 %. Con `similitud.exigir-orientacion: true` se exige, y un bloque mal orientado vale 0,5.
 
 Romper bloques de tu propia zona es instantáneo y te devuelve el bloque al inventario.
 
@@ -58,6 +72,8 @@ Mientras configuras quedas en **modo editor**, fuera de la arena y con tu invent
 | Comando | Descripción | Permiso |
 |---------|-------------|---------|
 | `/sb iniciar` | Inicia la partida con los jugadores del lobby | `speedbuilders.admin` |
+| `/sb top` | Tabla con el top 5 de puntos y su progreso | `speedbuilders.admin` |
+| `/sb progreso` | Porcentaje de cada jugador vivo en la ronda | `speedbuilders.admin` |
 | `/sb editar` | Sale o entra de la arena para configurar y construir | `speedbuilders.admin` |
 | `/sb setcentro` | Fija el centro de la arena | `speedbuilders.admin` |
 | `/sb setlobby` | Fija el lobby de espera | `speedbuilders.admin` |

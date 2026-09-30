@@ -2,6 +2,7 @@ package com.hermitblaze.speedbuilders;
 
 import com.hermitblaze.speedbuilders.arena.Arena;
 import com.hermitblaze.speedbuilders.build.BuildManager;
+import com.hermitblaze.speedbuilders.build.RecordManager;
 import com.hermitblaze.speedbuilders.command.SpeedBuildersCommand;
 import com.hermitblaze.speedbuilders.config.Messages;
 import com.hermitblaze.speedbuilders.config.Settings;
@@ -15,6 +16,7 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
     private Settings settings;
     private Messages messages;
     private BuildManager builds;
+    private RecordManager records;
     private Arena arena;
     private Game game;
 
@@ -23,6 +25,7 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
         saveDefaultConfig();
         messages = new Messages(this);
         builds = new BuildManager(this);
+        records = new RecordManager(this);
         arena = new Arena(this);
         reloadAll();
 
@@ -49,6 +52,9 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
         if (game != null) {
             game.shutdown();
         }
+        if (records != null) {
+            records.save();
+        }
     }
 
     /** Recarga config.yml, mensajes.yml, construcciones.yml y arena.yml. */
@@ -57,6 +63,7 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
         settings = Settings.from(getConfig(), getLogger());
         messages.reload();
         builds.load();
+        records.load();
         arena.load();
     }
 
@@ -70,6 +77,10 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
 
     public BuildManager builds() {
         return builds;
+    }
+
+    public RecordManager records() {
+        return records;
     }
 
     public Arena arena() {

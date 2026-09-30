@@ -5,7 +5,9 @@ import com.hermitblaze.speedbuilders.build.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -18,6 +20,11 @@ public record Settings(
         Map<Difficulty, Integer> buildSeconds,
         int maxRounds,
         int eliminationPercent,
+        boolean strictOrientation,
+        List<Integer> positionPoints,
+        int completionPoints,
+        int winnerPoints,
+        int leashDistance,
         int border,
         int gap,
         int minRadius,
@@ -31,7 +38,15 @@ public record Settings(
 ) {
 
     public int buildSeconds(Difficulty difficulty) {
-        return buildSeconds.getOrDefault(difficulty, 60);
+        return buildSeconds.getOrDefault(difficulty, 45);
+    }
+
+    /** Puntos por completar la construcción en la posición dada (1 = primero). */
+    public int pointsFor(int position) {
+        if (position >= 1 && position <= positionPoints.size()) {
+            return positionPoints.get(position - 1);
+        }
+        return completionPoints;
     }
 
     /** Lado total de cada isla (zona de 5x5 + borde a cada lado). */
@@ -41,9 +56,17 @@ public record Settings(
 
     public static Settings from(FileConfiguration c, Logger log) {
         Map<Difficulty, Integer> buildSeconds = new EnumMap<>(Difficulty.class);
-        buildSeconds.put(Difficulty.FACIL, Math.max(5, c.getInt("tiempos.construir.FACIL", 45)));
-        buildSeconds.put(Difficulty.MEDIO, Math.max(5, c.getInt("tiempos.construir.MEDIO", 70)));
-        buildSeconds.put(Difficulty.DIFICIL, Math.max(5, c.getInt("tiempos.construir.DIFICIL", 95)));
+        buildSeconds.put(Difficulty.FACIL, Math.max(5, c.getInt("tiempos.construir.FACIL", 30)));
+        buildSeconds.put(Difficulty.MEDIO, Math.max(5, c.getInt("tiempos.construir.MEDIO", 45)));
+        buildSeconds.put(Difficulty.DIFICIL, Math.max(5, c.getInt("tiempos.construir.DIFICIL", 60)));
+
+        List<Integer> positionPoints = new ArrayList<>();
+        for (Integer value : c.getIntegerList("puntos.por-posicion")) {
+            positionPoints.add(Math.max(0, value));
+        }
+        if (positionPoints.isEmpty()) {
+            positionPoints = List.of(10, 8, 6, 5, 4);
+        }
 
         return new Settings(
                 Math.max(1, c.getInt("jugadores.maximos", 128)),
@@ -53,6 +76,11 @@ public record Settings(
                 buildSeconds,
                 Math.max(1, c.getInt("rondas.maximas", 10)),
                 Math.min(90, Math.max(1, c.getInt("rondas.porcentaje-eliminacion", 25))),
+                c.getBoolean("similitud.exigir-orientacion", false),
+                List.copyOf(positionPoints),
+                Math.max(0, c.getInt("puntos.completar", 3)),
+                Math.max(0, c.getInt("puntos.ganador", 25)),
+                Math.max(1, c.getInt("plataformas.distancia-maxima", 3)),
                 Math.max(1, c.getInt("plataformas.borde", 2)),
                 Math.max(1, c.getInt("plataformas.separacion", 4)),
                 Math.max(4, c.getInt("plataformas.radio-minimo", 12)),

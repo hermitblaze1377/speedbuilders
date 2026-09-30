@@ -3,7 +3,8 @@
 # ==========================================================
 # Los textos se editan en mensajes.yml y las construcciones
 # en construcciones.yml. El centro y el lobby se guardan en
-# arena.yml con /sb setcentro y /sb setlobby.
+# arena.yml con /sb setcentro y /sb setlobby. Los récords
+# históricos se guardan en records.yml.
 #
 # Todos los jugadores entran a la arena al conectarse.
 # La partida solo empieza cuando un administrador usa /sb iniciar.
@@ -18,9 +19,9 @@ tiempos:
   memorizar: 20
   # Tiempo para replicarla, según la dificultad.
   construir:
-    FACIL: 45
-    MEDIO: 70
-    DIFICIL: 95
+    FACIL: 30
+    MEDIO: 45
+    DIFICIL: 60
   # Tiempo en que se muestran los resultados y las eliminaciones.
   evaluacion: 15
   # Celebración del ganador antes de volver al lobby.
@@ -34,6 +35,20 @@ rondas:
   # partida termine dentro del máximo de rondas.
   porcentaje-eliminacion: 25
 
+similitud:
+  # false = solo cuenta que el bloque sea el correcto; la orientación
+  #         (escaleras, troncos, calabazas...) no impide completar.
+  # true  = además exige la orientación; un bloque mal orientado vale medio punto.
+  exigir-orientacion: false
+
+puntos:
+  # Puntos por completar la construcción según el orden de llegada
+  # (1.º, 2.º, 3.º...). El resto de quienes la completan recibe 'completar'.
+  por-posicion: [10, 8, 6, 5, 4]
+  completar: 3
+  # Bonificación para el ganador de la partida.
+  ganador: 25
+
 plataformas:
   # Bloques de borde alrededor de la zona de construcción de 5x5.
   borde: 2
@@ -46,6 +61,8 @@ plataformas:
   radio-maximo-un-anillo: 60
   # Altura máxima de construcción sobre la plataforma.
   altura-zona: 6
+  # Cuántos bloques puede alejarse un jugador del borde de su isla.
+  distancia-maxima: 3
   materiales:
     zona: WHITE_CONCRETE
     anillo: LIGHT_GRAY_CONCRETE

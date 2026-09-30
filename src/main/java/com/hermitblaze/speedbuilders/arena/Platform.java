@@ -130,6 +130,25 @@ public final class Platform {
                 && location.getBlockY() <= floorY + height + 3;
     }
 
+    /**
+     * ¿La ubicación está dentro del área permitida alrededor de la isla?
+     * Se permite alejarse {@code margin} bloques del borde y subir un poco por encima de la zona.
+     */
+    public boolean withinLeash(Location location, int margin) {
+        if (location.getWorld() == null || !location.getWorld().equals(world)) {
+            return false;
+        }
+        double limit = radius() + margin + 0.5;
+        return Math.abs(location.getX() - (cx + 0.5)) <= limit
+                && Math.abs(location.getZ() - (cz + 0.5)) <= limit
+                && location.getY() <= floorY + height + 5;
+    }
+
+    /** Punto sobre la zona donde se muestra el holograma de progreso. */
+    public Location hologramLocation() {
+        return new Location(world, cx + 0.5, floorY + height + 2.2, cz + 0.5);
+    }
+
     /** ¿El bloque está dentro de la zona de construcción de 5x5? */
     public boolean inZone(Block block) {
         if (!block.getWorld().equals(world)) {
@@ -172,10 +191,16 @@ public final class Platform {
 
     /**
      * Compara la zona con la construcción. Cuenta cada posición donde hay algo
-     * (en el objetivo o en la réplica): bloque exacto = 1 punto, mismo bloque con
-     * otra orientación/estado = 0.5 puntos, bloque sobrante o faltante = 0.
+     * (en el objetivo o en la réplica). Bloque sobrante o faltante = 0 puntos.
+     * <ul>
+     *   <li>{@code strict = false}: basta con que sea el mismo bloque (1 punto); la
+     *       orientación y demás estados (escaleras, troncos, conexiones...) se ignoran,
+     *       porque dependen de cómo se colocan y podían impedir llegar al 100 %.</li>
+     *   <li>{@code strict = true}: bloque exacto = 1 punto; mismo bloque con otra
+     *       orientación = 0.5 puntos.</li>
+     * </ul>
      */
-    public Similarity compare(Build build) {
+    public Similarity compare(Build build, boolean strict) {
         double score = 0;
         int relevant = 0;
         for (int y = 0; y < height; y++) {
@@ -192,7 +217,7 @@ public final class Platform {
                     }
                     relevant++;
                     if (!actualAir && actual.getMaterial() == target.getMaterial()) {
-                        score += target.matches(actual) ? 1 : 0.5;
+                        score += !strict || target.matches(actual) ? 1 : 0.5;
                     }
                 }
             }

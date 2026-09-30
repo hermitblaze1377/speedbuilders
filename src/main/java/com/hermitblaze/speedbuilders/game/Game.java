@@ -7,6 +7,7 @@ import com.hermitblaze.speedbuilders.arena.PlatformLayout;
 import com.hermitblaze.speedbuilders.arena.Similarity;
 import com.hermitblaze.speedbuilders.build.Build;
 import com.hermitblaze.speedbuilders.build.Difficulty;
+import com.hermitblaze.speedbuilders.build.RecordManager;
 import com.hermitblaze.speedbuilders.config.Messages;
 import com.hermitblaze.speedbuilders.config.Settings;
 import com.hermitblaze.speedbuilders.ui.Sidebar;
@@ -24,8 +25,11 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TextDisplay;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.potion.PotionEffect;
@@ -46,6 +50,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.hermitblaze.speedbuilders.config.Messages.ph;
 import static com.hermitblaze.speedbuilders.config.Messages.phComponent;
@@ -60,6 +65,8 @@ import static com.hermitblaze.speedbuilders.config.Messages.phParsed;
  */
 public final class Game {
 
+    public static final String PERM_ADMIN = "speedbuilders.admin";
+
     private static final Title.Times TIMES = Title.Times.times(
             Duration.ofMillis(200), Duration.ofMillis(2200), Duration.ofMillis(500));
     private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yy");
@@ -67,6 +74,9 @@ public final class Game {
     private static final int BAR_LENGTH = 20;
     /** Líneas de la tabla de resultados en el chat; el resto se resume. */
     private static final int RESULT_LINES = 10;
+    /** Nombres que se listan como eliminados en el chat antes de resumir. */
+    private static final int ELIMINATED_NAMES = 15;
+    private static final int TOP_SIZE = 5;
 
     private final SpeedBuildersPlugin plugin;
     private final Map<UUID, GamePlayer> players = new LinkedHashMap<>();
@@ -91,6 +101,7 @@ public final class Game {
     private int toEliminate;
     private int quota;
     private int startingPlayers;
+    private int layoutCount;
     private int generation;
     private long buildStartMillis;
     private long tickCounter;
@@ -174,13 +185,13 @@ public final class Game {
             makeSpectator(player);
             m.send(player, "unido-espectador");
         } else {
-            boolean full = waitingCount() >= settings().maxPlayers();
+            boolean full = aliveCount() >= settings().maxPlayers();
             gp.setAlive(!full);
             prepareLobby(player);
             if (full) {
                 m.send(player, "partida-llena");
             } else {
-                broadcast("unido", ph("jugador", player.getName()), ph("actual", waitingCount()),
+                broadcast("unido", ph("jugador", player.getName()), ph("actual", aliveCount()),
                         ph("maximo", settings().maxPlayers()));
                 player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1.2f);
             }
@@ -192,6 +203,7 @@ public final class Game {
     public void leave(Player player) {
         GamePlayer gp = players.remove(player.getUniqueId());
         if (gp == null) {
+            sidebars.remove(player.getUniqueId());
             return;
         }
         boolean wasAlive = gp.isAlive();
@@ -199,11 +211,12 @@ public final class Game {
 
         if (!state.isRunning()) {
             if (wasAlive) {
-                broadcast("salio", ph("jugador", gp.name()), ph("actual", waitingCount()),
+                broadcast("salio", ph("jugador", gp.name()), ph("actual", aliveCount()),
                         ph("maximo", settings().maxPlayers()));
             }
             return;
         }
+        gp.removeHologram();
         if (players.isEmpty()) {
             reset(true);
             return;
@@ -211,6 +224,7 @@ public final class Game {
         if (!wasAlive || state == GameState.FINALIZADO) {
             return;
         }
+        gp.setPlace(aliveCount() + 1);
         gp.setAlive(false);
         qualified.remove(gp);
         if (gp.platform() != null) {
@@ -234,6 +248,8 @@ public final class Game {
      */
     public boolean toggleEditor(Player player) {
         if (editors.remove(player.getUniqueId())) {
+            sidebars.remove(player.getUniqueId());
+            player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
             join(player);
             return false;
         }
@@ -256,7 +272,7 @@ public final class Game {
 
     /** Inicia la partida con los jugadores que esperan en el lobby. */
     public boolean forceStart() {
-        if (state != GameState.ESPERANDO || waitingCount() == 0) {
+        if (state != GameState.ESPERANDO || aliveCount() == 0) {
             return false;
         }
         beginGame();
@@ -377,6 +393,7 @@ public final class Game {
         }
         if (tickCounter % 10 == 0) {
             updateSidebars();
+            updateHolograms();
         }
     }
 
@@ -403,6 +420,7 @@ public final class Game {
             platform.build(s);
             platforms.add(platform);
             gp.setPlatform(platform);
+            createHologram(gp);
             farthest = Math.max(farthest, centers.get(i).distance(center));
             Player p = gp.player();
             if (p != null) {
@@ -410,6 +428,7 @@ public final class Game {
                 prepareBuilder(p);
             }
         }
+        layoutCount = competitors.size();
         // Cuanto más grande la arena, más alto el punto de los espectadores.
         spectatorPoint = center.clone().add(0.5, Math.max(14, farthest * 0.6), 0.5);
         spectatorPoint.setPitch(farthest > 30 ? 90f : 70f);
@@ -428,6 +447,51 @@ public final class Game {
         nextRound();
     }
 
+    /**
+     * Cuando hay eliminados, reconstruye las islas de los que siguen en juego más cerca
+     * del centro. Se hace de una vez al empezar la ronda (unas decenas de miles de bloques
+     * con 128 jugadores, sin física), así que el impacto es un solo tick algo más pesado.
+     */
+    private void relayout() {
+        List<GamePlayer> alive = alivePlayers();
+        if (alive.isEmpty() || alive.size() >= layoutCount) {
+            return;
+        }
+        Settings s = settings();
+        Location center = arena().center();
+        // Se conserva el orden angular para que cada jugador se mueva lo menos posible.
+        alive.sort(Comparator.comparingDouble(gp -> angle(gp.platform(), center)));
+        List<Location> centers = layout(center, alive.size());
+        centers.sort(Comparator.comparingDouble(location -> angle(location, center)));
+
+        platforms.forEach(Platform::destroy);
+        platforms.clear();
+        for (int i = 0; i < alive.size(); i++) {
+            GamePlayer gp = alive.get(i);
+            Platform platform = new Platform(centers.get(i), s);
+            platform.build(s);
+            platforms.add(platform);
+            gp.setPlatform(platform);
+            if (gp.hologram() != null) {
+                gp.hologram().teleport(platform.hologramLocation());
+            }
+            Player p = gp.player();
+            if (p != null) {
+                p.teleport(platform.spawn());
+            }
+        }
+        layoutCount = alive.size();
+        broadcast("plataformas-reubicadas");
+    }
+
+    private static double angle(Platform platform, Location center) {
+        return platform == null ? 0 : angle(platform.center(), center);
+    }
+
+    private static double angle(Location location, Location center) {
+        return Math.atan2(location.getZ() - center.getZ(), location.getX() - center.getX());
+    }
+
     private void nextRound() {
         Settings s = settings();
         round++;
@@ -439,6 +503,7 @@ public final class Game {
             return;
         }
         usedBuilds.add(currentBuild.id());
+        relayout();
         state = GameState.MEMORIZANDO;
         ticksLeft = phaseTicks = s.memorizeSeconds() * 20;
 
@@ -461,6 +526,7 @@ public final class Game {
             }
         }
         broadcastRaw("anuncio-ronda", resolvers);
+        showRecords();
         for (GamePlayer gp : players.values()) {
             Player p = gp.player();
             if (p != null) {
@@ -468,6 +534,21 @@ public final class Game {
             }
         }
         playAll(Sound.BLOCK_NOTE_BLOCK_BELL, 1.2f);
+    }
+
+    /** Muestra en el chat el top 5 histórico de la construcción actual. */
+    private void showRecords() {
+        List<RecordManager.Entry> top = plugin.records().top(currentBuild.id());
+        broadcastRaw("record.cabecera", ph("construccion", currentBuild.name()));
+        if (top.isEmpty()) {
+            broadcastRaw("record.vacio");
+        }
+        for (int i = 0; i < top.size(); i++) {
+            RecordManager.Entry entry = top.get(i);
+            broadcastRaw("record.linea", ph("posicion", i + 1), ph("jugador", entry.name()),
+                    ph("tiempo", formatSeconds(entry.millis())));
+        }
+        broadcastRaw("record.pie");
     }
 
     private Difficulty difficultyFor(int roundNumber) {
@@ -541,8 +622,12 @@ public final class Game {
         });
     }
 
+    private Similarity similarity(GamePlayer gp) {
+        return gp.platform().compare(currentBuild, settings().strictOrientation());
+    }
+
     private void evaluate(GamePlayer gp) {
-        Similarity similarity = gp.platform().compare(currentBuild);
+        Similarity similarity = similarity(gp);
         gp.setPercent(similarity.percent());
         Player p = gp.player();
         if (p != null) {
@@ -562,17 +647,30 @@ public final class Game {
         qualified.add(gp);
         String time = formatSeconds(gp.finishMillis());
         int position = qualified.size();
+        int points = settings().pointsFor(position);
+        gp.addPoints(points);
 
         gp.platform().celebrate();
         Player p = gp.player();
         if (p != null) {
             p.getInventory().clear();
             p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1.2f);
-            title(p, "titulo.perfecto", "titulo.perfecto-sub", ph("tiempo", time), ph("posicion", position));
+            title(p, "titulo.perfecto", "titulo.perfecto-sub", ph("tiempo", time), ph("posicion", position),
+                    ph("puntos", points));
         }
         broadcast("completado", ph("jugador", gp.name()), ph("tiempo", time), ph("posicion", position),
-                ph("clasificados", quota));
+                ph("clasificados", quota), ph("puntos", points));
         playAll(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.6f);
+
+        int recordPosition = plugin.records().submit(currentBuild.id(), gp.uuid(), gp.name(), gp.finishMillis());
+        if (recordPosition == 1) {
+            broadcast("record.nuevo", ph("jugador", gp.name()), ph("tiempo", time),
+                    ph("construccion", currentBuild.name()));
+            playAll(Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.5f);
+        } else if (recordPosition > 1) {
+            broadcast("record.entra-top", ph("jugador", gp.name()), ph("posicion", recordPosition),
+                    ph("construccion", currentBuild.name()));
+        }
 
         boolean allDone = alivePlayers().stream().allMatch(GamePlayer::isFinished);
         if (qualified.size() >= quota || allDone) {
@@ -583,11 +681,12 @@ public final class Game {
     private void endRound() {
         state = GameState.EVALUANDO;
         int evaluationTicks = settings().evaluationSeconds() * 20;
+        plugin.records().save();
 
         List<GamePlayer> alive = alivePlayers();
         for (GamePlayer gp : alive) {
             if (!gp.isFinished()) {
-                gp.setPercent(gp.platform().compare(currentBuild).percent());
+                gp.setPercent(similarity(gp).percent());
             }
             Player p = gp.player();
             if (p != null) {
@@ -608,6 +707,12 @@ public final class Game {
             List<GamePlayer> sorted = new ArrayList<>(alive);
             sorted.sort(Comparator.comparingDouble(GamePlayer::percent));
             eliminated.addAll(sorted.subList(0, Math.min(toEliminate, sorted.size())));
+        }
+
+        // Puesto final: el peor porcentaje ocupa el último lugar disponible.
+        eliminated.sort(Comparator.comparingDouble(GamePlayer::percent));
+        for (int i = 0; i < eliminated.size(); i++) {
+            eliminated.get(i).setPlace(alive.size() - i);
         }
 
         List<GamePlayer> ranking = new ArrayList<>(qualified);
@@ -653,23 +758,40 @@ public final class Game {
                 key = "resultados.salvado";
             }
             broadcastRaw(key, ph("posicion", i + 1), ph("jugador", gp.name()),
-                    ph("tiempo", formatSeconds(gp.finishMillis())), ph("porcentaje", formatPercent(gp.percent())));
+                    ph("tiempo", formatSeconds(gp.finishMillis())), ph("porcentaje", formatPercent(gp.percent())),
+                    ph("puntos", gp.points()));
         }
         if (ranking.size() > shown) {
             broadcastRaw("resultados.mas", ph("cantidad", ranking.size() - shown));
+        }
+        if (!eliminated.isEmpty()) {
+            // De mejor a peor puesto: "Ana (#7), Luis (#8)..."
+            List<GamePlayer> byPlace = new ArrayList<>(eliminated);
+            byPlace.sort(Comparator.comparingInt(GamePlayer::place));
+            String names = byPlace.stream()
+                    .limit(ELIMINATED_NAMES)
+                    .map(gp -> gp.name() + " (#" + gp.place() + ")")
+                    .collect(Collectors.joining(", "));
+            if (byPlace.size() > ELIMINATED_NAMES) {
+                names += " +" + (byPlace.size() - ELIMINATED_NAMES);
+            }
+            broadcastRaw("resultados.eliminados", ph("lista", names), ph("cantidad", eliminated.size()));
         }
         broadcastRaw("resultados.pie", ph("vivos", ranking.size() - eliminated.size()),
                 ph("eliminados", eliminated.size()));
     }
 
     private void eliminateEffects(GamePlayer gp) {
+        gp.removeHologram();
         if (gp.platform() != null) {
             gp.platform().explode();
         }
-        broadcast("eliminado", ph("jugador", gp.name()), ph("porcentaje", formatPercent(gp.percent())));
+        broadcast("eliminado", ph("jugador", gp.name()), ph("porcentaje", formatPercent(gp.percent())),
+                ph("puesto", gp.place()));
         Player p = gp.player();
         if (p != null) {
-            title(p, "titulo.eliminado", "titulo.eliminado-sub", ph("porcentaje", formatPercent(gp.percent())));
+            title(p, "titulo.eliminado", "titulo.eliminado-sub", ph("porcentaje", formatPercent(gp.percent())),
+                    ph("puesto", gp.place()), ph("puntos", gp.points()));
             p.playSound(p.getLocation(), Sound.ENTITY_BLAZE_DEATH, 1f, 0.8f);
             makeSpectator(p);
         }
@@ -694,11 +816,26 @@ public final class Game {
         state = GameState.FINALIZADO;
         winner = champion;
         ticksLeft = phaseTicks = settings().endingSeconds() * 20;
+        plugin.records().save();
         for (GamePlayer gp : players.values()) {
+            gp.removeHologram();
             Player p = gp.player();
             if (p != null) {
                 p.sendActionBar(Component.empty());
             }
+        }
+
+        // Puestos de quienes seguían en juego (solo si se llegó al máximo de rondas con varios vivos).
+        List<GamePlayer> alive = alivePlayers();
+        alive.remove(champion);
+        alive.sort(Comparator.comparingDouble(GamePlayer::percent).reversed());
+        int place = champion != null ? 2 : 1;
+        for (GamePlayer gp : alive) {
+            gp.setPlace(place++);
+        }
+        if (champion != null) {
+            champion.setPlace(1);
+            champion.addPoints(settings().winnerPoints());
         }
 
         if (champion == null) {
@@ -709,22 +846,41 @@ public final class Game {
                     title(p, "titulo.sin-ganador", "titulo.sin-ganador-sub");
                 }
             }
+        } else {
+            broadcastRaw("ganador", ph("jugador", champion.name()), ph("ronda", round),
+                    ph("puntos", champion.points()));
+            for (GamePlayer gp : players.values()) {
+                Player p = gp.player();
+                if (p == null) {
+                    continue;
+                }
+                if (gp == champion) {
+                    title(p, "titulo.victoria", "titulo.victoria-sub", ph("jugador", champion.name()));
+                } else {
+                    title(p, "titulo.ganador", "titulo.ganador-sub", ph("jugador", champion.name()));
+                }
+            }
+            playAll(Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f);
+        }
+        showFinalRanking();
+    }
+
+    /** Top 5 final de la partida: puesto y puntos. */
+    private void showFinalRanking() {
+        List<GamePlayer> ranked = players.values().stream()
+                .filter(gp -> gp.place() > 0)
+                .sorted(Comparator.comparingInt(GamePlayer::place))
+                .limit(TOP_SIZE)
+                .toList();
+        if (ranked.isEmpty()) {
             return;
         }
-
-        broadcastRaw("ganador", ph("jugador", champion.name()), ph("ronda", round));
-        for (GamePlayer gp : players.values()) {
-            Player p = gp.player();
-            if (p == null) {
-                continue;
-            }
-            if (gp == champion) {
-                title(p, "titulo.victoria", "titulo.victoria-sub", ph("jugador", champion.name()));
-            } else {
-                title(p, "titulo.ganador", "titulo.ganador-sub", ph("jugador", champion.name()));
-            }
+        broadcastRaw("final.cabecera");
+        for (GamePlayer gp : ranked) {
+            broadcastRaw("final.linea", ph("posicion", gp.place()), ph("jugador", gp.name()),
+                    ph("puntos", gp.points()));
         }
-        playAll(Sound.UI_TOAST_CHALLENGE_COMPLETE, 1f);
+        broadcastRaw("final.pie");
     }
 
     private void celebrateWinner() {
@@ -758,9 +914,16 @@ public final class Game {
     public void reset(boolean rejoin) {
         generation++;
         for (GamePlayer gp : new ArrayList<>(players.values())) {
+            gp.removeHologram();
             Player p = gp.player();
             if (p != null) {
                 restore(p, gp);
+            }
+        }
+        for (UUID editor : editors) {
+            Player p = Bukkit.getPlayer(editor);
+            if (p != null) {
+                p.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
             }
         }
         players.clear();
@@ -772,6 +935,7 @@ public final class Game {
         state = GameState.ESPERANDO;
         round = 0;
         ticksLeft = 0;
+        layoutCount = 0;
         currentBuild = null;
         winner = null;
         spectatorPoint = null;
@@ -782,7 +946,7 @@ public final class Game {
     }
 
     // ------------------------------------------------------------------
-    // Reglas de construcción (usadas por el listener)
+    // Reglas de construcción y movimiento (usadas por el listener)
     // ------------------------------------------------------------------
 
     public boolean canModify(GamePlayer gp, Block block) {
@@ -798,20 +962,158 @@ public final class Game {
         return platformAt(block.getLocation()) != null;
     }
 
-    /** Si el jugador cae al vacío, vuelve a su plataforma o al lobby. */
-    public void handleFall(Player player, GamePlayer gp, Location to) {
+    /**
+     * Mantiene a los jugadores cerca de su plataforma y los rescata si caen al vacío.
+     *
+     * @return la ubicación a la que hay que devolverlo, o {@code null} si el movimiento es válido
+     */
+    public Location restrictMove(Player player, GamePlayer gp, Location from, Location to) {
         if (state.isRunning()) {
-            if (gp.isAlive() && gp.platform() != null && to.getY() < gp.platform().floorY() - 8) {
-                player.teleport(gp.platform().spawn());
-                player.setFallDistance(0f);
+            Platform platform = gp.platform();
+            if (!gp.isAlive() || platform == null) {
+                return null;
             }
-            return;
+            if (to.getY() < platform.floorY() - 8) {
+                player.setFallDistance(0f);
+                return platform.spawn();
+            }
+            int margin = settings().leashDistance();
+            if (!platform.withinLeash(to, margin)) {
+                player.sendActionBar(messages().get("actionbar.limite"));
+                if (platform.withinLeash(from, margin)) {
+                    Location back = from.clone();
+                    back.setYaw(to.getYaw());
+                    back.setPitch(to.getPitch());
+                    return back;
+                }
+                return platform.spawn();
+            }
+            return null;
         }
         Location lobby = arena().lobby();
         if (lobby != null && lobby.getWorld() != null && lobby.getWorld().equals(to.getWorld())
                 && to.getY() < lobby.getY() - 30) {
-            player.teleport(lobby);
             player.setFallDistance(0f);
+            return lobby;
+        }
+        return null;
+    }
+
+    // ------------------------------------------------------------------
+    // Paneles para operadores: /sb top y /sb progreso
+    // ------------------------------------------------------------------
+
+    /** Competidores ordenados por puntos (y luego por porcentaje de la ronda). */
+    private List<GamePlayer> byPoints() {
+        return players.values().stream()
+                .filter(gp -> gp.platform() != null || gp.place() > 0)
+                .sorted(Comparator.comparingInt(GamePlayer::points).reversed()
+                        .thenComparing(GamePlayer::isAlive, Comparator.reverseOrder())
+                        .thenComparing(Comparator.comparingDouble(GamePlayer::percent).reversed()))
+                .toList();
+    }
+
+    public void sendTop(CommandSender sender) {
+        Messages m = messages();
+        if (!state.isRunning()) {
+            m.send(sender, "no-hay-partida");
+            return;
+        }
+        sender.sendMessage(m.get("tabla.cabecera", ph("ronda", round), ph("maximo", settings().maxRounds()),
+                ph("vivos", aliveCount()),
+                ph("construccion", currentBuild != null ? currentBuild.name() : "-")));
+        List<GamePlayer> top = byPoints();
+        for (int i = 0; i < Math.min(TOP_SIZE, top.size()); i++) {
+            GamePlayer gp = top.get(i);
+            sender.sendMessage(m.get("tabla.linea", ph("posicion", i + 1), ph("jugador", gp.name()),
+                    ph("puntos", gp.points()), phComponent("estado", status(gp)),
+                    phComponent("barra", progressBar(gp.percent())),
+                    phComponent("porcentaje", Component.text(formatPercent(gp.percent()) + "%",
+                            percentColor(gp.percent())))));
+        }
+        sender.sendMessage(m.get("tabla.pie"));
+    }
+
+    public void sendProgress(CommandSender sender) {
+        Messages m = messages();
+        if (!state.isRunning()) {
+            m.send(sender, "no-hay-partida");
+            return;
+        }
+        List<GamePlayer> alive = alivePlayers();
+        alive.sort(Comparator.comparing(GamePlayer::isFinished).reversed()
+                .thenComparing(Comparator.comparingDouble(GamePlayer::percent).reversed()));
+        sender.sendMessage(m.get("progreso.cabecera", ph("vivos", alive.size()),
+                ph("construccion", currentBuild != null ? currentBuild.name() : "-")));
+        for (GamePlayer gp : alive) {
+            sender.sendMessage(m.get("progreso.linea", ph("jugador", gp.name()), phComponent("estado", status(gp)),
+                    phComponent("barra", progressBar(gp.percent())),
+                    phComponent("porcentaje", Component.text(formatPercent(gp.percent()) + "%",
+                            percentColor(gp.percent()))),
+                    ph("puntos", gp.points())));
+        }
+    }
+
+    private Component status(GamePlayer gp) {
+        if (!gp.isAlive()) {
+            return Component.text("✘", NamedTextColor.RED);
+        }
+        return gp.isFinished()
+                ? Component.text("✔", NamedTextColor.GREEN)
+                : Component.text("●", NamedTextColor.YELLOW);
+    }
+
+    // ------------------------------------------------------------------
+    // Hologramas de progreso (solo visibles para operadores)
+    // ------------------------------------------------------------------
+
+    private void createHologram(GamePlayer gp) {
+        gp.removeHologram();
+        Location location = gp.platform().hologramLocation();
+        TextDisplay display = location.getWorld().spawn(location, TextDisplay.class);
+        display.setPersistent(false);
+        display.setVisibleByDefault(false);
+        display.setBillboard(Display.Billboard.CENTER);
+        display.setShadowed(true);
+        display.setBackgroundColor(Color.fromARGB(110, 0, 0, 0));
+        display.text(hologramText(gp));
+        gp.setHologram(display);
+    }
+
+    private Component hologramText(GamePlayer gp) {
+        Messages m = messages();
+        TagResolver[] resolvers = {
+                ph("jugador", gp.name()),
+                ph("puntos", gp.points()),
+                ph("tiempo", formatSeconds(gp.finishMillis())),
+                phComponent("barra", progressBar(gp.percent())),
+                phComponent("porcentaje", Component.text(formatPercent(gp.percent()) + "%",
+                        percentColor(gp.percent())))
+        };
+        return m.get(gp.isFinished() ? "holograma.completado" : "holograma.progreso", resolvers);
+    }
+
+    private void updateHolograms() {
+        if (!state.isRunning()) {
+            return;
+        }
+        List<Player> admins = new ArrayList<>();
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            if (online.hasPermission(PERM_ADMIN)) {
+                admins.add(online);
+            }
+        }
+        for (GamePlayer gp : players.values()) {
+            TextDisplay display = gp.hologram();
+            if (display == null || !display.isValid()) {
+                continue;
+            }
+            display.text(hologramText(gp));
+            for (Player admin : admins) {
+                if (!admin.canSee(display)) {
+                    admin.showEntity(plugin, display);
+                }
+            }
         }
     }
 
@@ -837,11 +1139,6 @@ public final class Game {
             }
         }
         return count;
-    }
-
-    /** En el lobby, "vivos" son los que jugarán la próxima partida. */
-    private int waitingCount() {
-        return aliveCount();
     }
 
     private void heal(Player player) {
@@ -985,7 +1282,7 @@ public final class Game {
         BossBar.Color color;
         switch (state) {
             case ESPERANDO -> {
-                name = m.get("bossbar.esperando", ph("actual", waitingCount()), ph("maximo", s.maxPlayers()));
+                name = m.get("bossbar.esperando", ph("actual", aliveCount()), ph("maximo", s.maxPlayers()));
                 progress = 1f;
                 color = BossBar.Color.YELLOW;
             }
@@ -1019,44 +1316,85 @@ public final class Game {
     private void updateSidebars() {
         for (GamePlayer gp : players.values()) {
             Sidebar sidebar = sidebars.get(gp.uuid());
-            if (sidebar != null) {
-                sidebar.update(sidebarLines(gp));
+            Player p = gp.player();
+            if (sidebar != null && p != null) {
+                sidebar.update(sidebarLines(p, gp));
             }
+        }
+        // Los editores (operadores fuera de la arena) también ven el panel durante la partida.
+        if (!state.isRunning()) {
+            return;
+        }
+        for (UUID editor : editors) {
+            Player p = Bukkit.getPlayer(editor);
+            if (p == null) {
+                continue;
+            }
+            Sidebar sidebar = sidebars.computeIfAbsent(editor, id -> new Sidebar(messages().get("scoreboard.titulo")));
+            if (p.getScoreboard() != sidebar.scoreboard()) {
+                p.setScoreboard(sidebar.scoreboard());
+            }
+            sidebar.update(sidebarLines(p, null));
         }
     }
 
-    private List<Component> sidebarLines(GamePlayer gp) {
+    private List<Component> sidebarLines(Player viewer, GamePlayer gp) {
         Messages m = messages();
         Settings s = settings();
         List<String> raw = new ArrayList<>();
-        raw.add("<dark_gray>" + LocalDate.now().format(DATE) + " <gray>• <dark_gray>Speed Builders");
-        raw.add("");
         if (!state.isRunning()) {
-            raw.add("<gray>Jugadores: <white>" + waitingCount() + "<dark_gray>/<gray>" + s.maxPlayers());
+            raw.add("<dark_gray>" + LocalDate.now().format(DATE) + " <gray>• <dark_gray>Speed Builders");
+            raw.add("");
+            raw.add("<gray>Jugadores: <white>" + aliveCount() + "<dark_gray>/<gray>" + s.maxPlayers());
             raw.add("");
             raw.add("<yellow>Esperando inicio...");
-            if (!gp.isAlive()) {
+            if (gp != null && !gp.isAlive()) {
                 raw.add("<red>Partida llena: espectador");
             }
+        } else if (viewer.hasPermission(PERM_ADMIN)) {
+            // Panel de operador: top 5 por puntos con el progreso de la ronda.
+            raw.add("");
+            raw.add("<gray>Ronda <white>" + round + "<dark_gray>/<gray>" + s.maxRounds()
+                    + " <dark_gray>• <gray>Vivos <green>" + aliveCount());
+            if (currentBuild != null) {
+                raw.add("<aqua>" + m.escape(currentBuild.name()) + " <dark_gray>• " + state.label());
+            }
+            raw.add("");
+            raw.add("<gold><bold>★ TOP 5 PUNTOS");
+            List<GamePlayer> top = byPoints();
+            for (int i = 0; i < TOP_SIZE; i++) {
+                if (i >= top.size()) {
+                    raw.add("<dark_gray>" + (i + 1) + ". -");
+                    continue;
+                }
+                GamePlayer entry = top.get(i);
+                String mark = !entry.isAlive() ? "<red>✘" : entry.isFinished() ? "<green>✔" : "<yellow>●";
+                raw.add(mark + " <white>" + m.escape(entry.name()) + " <gold>" + entry.points()
+                        + "pts <dark_gray>" + formatPercent(entry.percent()) + "%");
+            }
         } else {
+            raw.add("<dark_gray>" + LocalDate.now().format(DATE) + " <gray>• <dark_gray>Speed Builders");
+            raw.add("");
             raw.add("<gray>Ronda: <white>" + round + "<dark_gray>/<gray>" + s.maxRounds());
             raw.add("<gray>Vivos: <green>" + aliveCount());
+            if (gp != null) {
+                raw.add("<gray>Tus puntos: <gold>" + gp.points());
+            }
             raw.add("");
             if (currentBuild != null) {
                 raw.add("<gray>Construcción:");
                 raw.add(" <aqua>" + m.escape(currentBuild.name()));
                 raw.add("<gray>Dificultad: " + currentBuild.difficulty().formatted());
-                raw.add("");
             }
             raw.add("<gray>Estado: " + state.label());
             if (state == GameState.CONSTRUYENDO) {
                 raw.add("<gray>Clasificados: <green>" + qualified.size() + "<dark_gray>/<gray>" + quota);
-                if (gp.isAlive()) {
+                if (gp != null && gp.isAlive()) {
                     raw.add("<gray>Tu similitud: <yellow>" + formatPercent(gp.percent()) + "%");
                 }
             }
-            if (!gp.isAlive()) {
-                raw.add("<red>✘ Espectador");
+            if (gp != null && !gp.isAlive()) {
+                raw.add(gp.place() > 0 ? "<red>✘ Eliminado <gray>(puesto #" + gp.place() + ")" : "<red>✘ Espectador");
             }
         }
         raw.add("");

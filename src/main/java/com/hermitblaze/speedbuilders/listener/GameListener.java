@@ -3,6 +3,7 @@ package com.hermitblaze.speedbuilders.listener;
 import com.hermitblaze.speedbuilders.SpeedBuildersPlugin;
 import com.hermitblaze.speedbuilders.game.Game;
 import com.hermitblaze.speedbuilders.game.GamePlayer;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
@@ -102,14 +103,22 @@ public final class GameListener implements Listener {
         }
     }
 
+    /** Impide alejarse de la plataforma y rescata a quien cae al vacío. */
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
-        if (event.getTo().getBlockY() == event.getFrom().getBlockY()) {
+        Location from = event.getFrom();
+        Location to = event.getTo();
+        if (from.getBlockX() == to.getBlockX() && from.getBlockY() == to.getBlockY()
+                && from.getBlockZ() == to.getBlockZ()) {
             return;
         }
         GamePlayer gp = game().player(event.getPlayer());
-        if (gp != null) {
-            game().handleFall(event.getPlayer(), gp, event.getTo());
+        if (gp == null) {
+            return;
+        }
+        Location corrected = game().restrictMove(event.getPlayer(), gp, from, to);
+        if (corrected != null) {
+            event.setTo(corrected);
         }
     }
 

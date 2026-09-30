@@ -30,7 +30,7 @@ import static com.hermitblaze.speedbuilders.config.Messages.phParsed;
 public final class SpeedBuildersCommand implements TabExecutor {
 
     private static final String PERM_ADMIN = "speedbuilders.admin";
-    private static final List<String> SUBCOMMANDS = List.of("iniciar", "detener", "editar", "setcentro",
+    private static final List<String> SUBCOMMANDS = List.of("iniciar", "detener", "top", "progreso", "editar", "setcentro",
             "setlobby", "generar", "limpiar", "pegar", "guardar", "construcciones", "recargar", "ayuda");
 
     private final SpeedBuildersPlugin plugin;
@@ -54,6 +54,8 @@ public final class SpeedBuildersCommand implements TabExecutor {
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case "iniciar", "start" -> m.send(sender, game.forceStart() ? "partida-forzada" : "no-se-puede-iniciar");
             case "detener", "stop" -> m.send(sender, game.stop() ? "partida-detenida-admin" : "no-hay-partida");
+            case "top", "tabla" -> game.sendTop(sender);
+            case "progreso" -> game.sendProgress(sender);
             case "editar" -> {
                 Player player = requirePlayer(sender);
                 if (player != null) {

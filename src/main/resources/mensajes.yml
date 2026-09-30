@@ -33,17 +33,27 @@ anuncio-ronda: |-
   <gray>   ¡Memorízala! Desaparecerá en <yellow><segundos> segundos</yellow>.
   <dark_gray><strikethrough>                                                  </strikethrough>
 inicio-construccion: "<green>¡A construir!</green> <gray>Solo clasifican los <white><clasificados></white> primeros en completarla. <dark_gray>(<red><eliminados></red> <dark_gray>eliminados como mínimo)"
-completado: "<green>✔ <white><jugador></white> completó la construcción en <yellow><tiempo>s</yellow> <dark_gray>(#<posicion>/<clasificados>)"
-eliminado: "<red>✘ <white><jugador></white> fue eliminado <dark_gray>(<red><porcentaje>%</red>)"
+completado: "<green>✔ <white><jugador></white> completó la construcción en <yellow><tiempo>s</yellow> <dark_gray>(#<posicion>/<clasificados>) <gold>+<puntos> pts"
+eliminado: "<red>✘ <white><jugador></white> fue eliminado <dark_gray>• <gray>quedó en el puesto <white>#<puesto></white> <dark_gray>(<red><porcentaje>%</red>)"
+plataformas-reubicadas: "<aqua>⇄ Las plataformas se acercaron al centro."
+
+record:
+  cabecera: "<gradient:#FFD84D:#FF8A00><bold>   ★ RÉCORDS HISTÓRICOS</bold></gradient> <dark_gray>• <white><construccion>"
+  linea: "<gray>     <gold>#<posicion></gold> <white><jugador></white> <dark_gray>- <yellow><tiempo>s"
+  vacio: "<gray>     Aún no hay récords. ¡Sé el primero!"
+  pie: "<dark_gray><strikethrough>                                                  </strikethrough>"
+  nuevo: "<gold><bold>★ ¡NUEVO RÉCORD!</bold></gold> <white><jugador></white> <gray>completó <white><construccion></white> en <yellow><tiempo>s"
+  entra-top: "<gold>★ <white><jugador></white> <gray>entró al top histórico de <white><construccion></white> <gray>en el puesto <gold>#<posicion>"
 
 resultados:
   cabecera: |-
     <dark_gray><strikethrough>                                                  </strikethrough>
     <gradient:#B388FF:#7C4DFF><bold>   RESULTADOS</bold></gradient> <dark_gray>• <gray>Ronda <white><ronda></white> <dark_gray>• <white><construccion>
-  completado: "<gray>   #<posicion> <green>✔ <white><jugador></white> <dark_gray>- <yellow><tiempo>s"
+  completado: "<gray>   #<posicion> <green>✔ <white><jugador></white> <dark_gray>- <yellow><tiempo>s <dark_gray>• <gold><puntos> pts"
   salvado: "<gray>   #<posicion> <yellow>● <white><jugador></white> <dark_gray>- <yellow><porcentaje>%"
   eliminado: "<gray>   #<posicion> <red>✘ <white><jugador></white> <dark_gray>- <red><porcentaje>%"
   mas: "<dark_gray>   ... y <cantidad> jugadores más"
+  eliminados: "<red>   ✘ Eliminados (<cantidad>): <gray><lista>"
   pie: |-
     <gray>   Siguen en juego: <green><vivos></green> <dark_gray>• <gray>Eliminados: <red><eliminados></red>
     <dark_gray><strikethrough>                                                  </strikethrough>
@@ -52,7 +62,7 @@ resultados:
 ganador: |-
   <dark_gray><strikethrough>                                                  </strikethrough>
   <gradient:#FFD84D:#FF8A00><bold>   ¡FIN DE LA PARTIDA!</bold></gradient>
-  <gray>   Ganador: <gold><bold><jugador></bold></gold> <dark_gray>(ronda <ronda>)
+  <gray>   Ganador: <gold><bold><jugador></bold></gold> <dark_gray>(ronda <ronda>, <gold><puntos> pts</gold>)
   <dark_gray><strikethrough>                                                  </strikethrough>
 sin-ganador: |-
   <dark_gray><strikethrough>                                                  </strikethrough>
@@ -61,6 +71,26 @@ sin-ganador: |-
   <dark_gray><strikethrough>                                                  </strikethrough>
 partida-detenida: "<red>Un administrador detuvo la partida."
 
+final:
+  cabecera: "<gradient:#FFD84D:#FF8A00><bold>   ★ TOP 5 DE LA PARTIDA</bold></gradient>"
+  linea: "<gray>     <gold>#<posicion></gold> <white><jugador></white> <dark_gray>- <gold><puntos> pts"
+  pie: "<dark_gray><strikethrough>                                                  </strikethrough>"
+
+# ---------------- Paneles para operadores ----------------
+tabla:
+  cabecera: |-
+    <dark_gray><strikethrough>                                                  </strikethrough>
+    <gradient:#FFD84D:#FF8A00><bold>   ★ TOP 5 PUNTOS</bold></gradient> <dark_gray>• <gray>Ronda <white><ronda></white>/<maximo> <dark_gray>• <gray>Vivos <green><vivos></green>
+    <gray>   Construcción: <white><construccion>
+  linea: "<gray>   <gold>#<posicion></gold> <estado> <white><jugador></white> <dark_gray>• <gold><puntos> pts <dark_gray>• <barra> <porcentaje>"
+  pie: "<dark_gray><strikethrough>                                                  </strikethrough>"
+progreso:
+  cabecera: "<gold>Progreso de la ronda <dark_gray>• <white><construccion></white> <dark_gray>(<green><vivos></green> vivos)"
+  linea: "<gray>  <estado> <white><jugador></white> <barra> <porcentaje> <dark_gray>• <gold><puntos> pts"
+holograma:
+  progreso: "<white><bold><jugador></bold></white>\n<barra> <porcentaje>\n<gold>★ <puntos> pts"
+  completado: "<white><bold><jugador></bold></white>\n<green><bold>✔ COMPLETADO</bold> <gray><tiempo>s\n<gold>★ <puntos> pts"
+
 # ---------------- Títulos ----------------
 titulo:
   ronda: "<gradient:#FFD84D:#FF8A00><bold>RONDA <ronda></bold></gradient>"
@@ -68,9 +98,9 @@ titulo:
   construir: "<green><bold>¡CONSTRUYE!</bold>"
   construir-sub: "<gray>Clasifican los <white><clasificados></white> primeros"
   perfecto: "<green><bold>¡PERFECTO!</bold>"
-  perfecto-sub: "<gray>Tiempo: <yellow><tiempo>s</yellow> <dark_gray>• <gray>Puesto <white>#<posicion>"
+  perfecto-sub: "<gray>Tiempo: <yellow><tiempo>s</yellow> <dark_gray>• <gray>Puesto <white>#<posicion></white> <dark_gray>• <gold>+<puntos> pts"
   eliminado: "<red><bold>ELIMINADO</bold>"
-  eliminado-sub: "<gray>Similitud: <red><porcentaje>%</red> <dark_gray>• <gray>Ahora eres espectador"
+  eliminado-sub: "<gray>Quedaste <white>#<puesto></white> <dark_gray>• <red><porcentaje>%</red> <dark_gray>• <gold><puntos> pts"
   victoria: "<gradient:#FFD84D:#FF8A00><bold>¡VICTORIA!</bold></gradient>"
   victoria-sub: "<gray>Eres el mejor constructor"
   ganador: "<gold><bold><jugador></bold>"
@@ -83,6 +113,7 @@ actionbar:
   memorizando: "<yellow>✦ <gray>Memoriza la construcción <dark_gray>• <white><segundos>s"
   construyendo: "<gray>Similitud <barra> <porcentaje> <dark_gray>• <gray>Tiempo <white><segundos>s"
   completado: "<green><bold>✔ ¡COMPLETADO!</bold> <gray>Esperando al resto..."
+  limite: "<red>No puedes alejarte de tu plataforma."
 
 # ---------------- Bossbar ----------------
 bossbar:
@@ -131,6 +162,8 @@ ayuda: |-
   <gradient:#FFD84D:#FF8A00><bold>   SPEED BUILDERS</bold></gradient> <dark_gray>• <gray>los jugadores entran solos al conectarse
   <gold>  /sb iniciar <dark_gray>- <gray>Inicia la partida
   <gold>  /sb detener <dark_gray>- <gray>Detiene la partida y vuelve al lobby
+  <gold>  /sb top <dark_gray>- <gray>Tabla con el top 5 de puntos y su progreso
+  <gold>  /sb progreso <dark_gray>- <gray>Porcentaje de cada jugador en la ronda
   <gold>  /sb editar <dark_gray>- <gray>Sale/entra de la arena para configurar
   <gold>  /sb setcentro <dark_gray>- <gray>Fija el centro (bloque bajo tus pies)
   <gold>  /sb setlobby <dark_gray>- <gray>Fija el lobby de espera
