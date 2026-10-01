@@ -1,10 +1,10 @@
 # ==========================================================
-#               SpeedBuilders  -  Mensajes
+#              SpeedBuilders 2  -  Mensajes
 # ==========================================================
 # Formato MiniMessage: https://docs.advntr.dev/minimessage/format.html
 # Los <marcadores> (por ejemplo <jugador>) se reemplazan solos.
 
-prefijo: "<dark_gray>[<gradient:#FFD84D:#FF8A00><bold>SB</bold></gradient><dark_gray>] <gray>"
+prefijo: "<dark_gray>[<gradient:#FFD84D:#FF8A00><bold>SB2</bold></gradient><dark_gray>] <gray>"
 
 # ---------------- General ----------------
 sin-permiso: "<red>No tienes permiso para hacer eso."
@@ -126,7 +126,7 @@ bossbar:
 
 # ---------------- Scoreboard ----------------
 scoreboard:
-  titulo: "<gradient:#FFD84D:#FF8A00><bold>SPEED BUILDERS</bold></gradient>"
+  titulo: "<gradient:#FFD84D:#FF8A00><bold>SPEED BUILDERS 2</bold></gradient>"
   pie: "<green><bold>Kick: Hermitblaze"
 
 # ---------------- Administración ----------------
@@ -159,7 +159,7 @@ no-recargar-en-partida: "<red>No puedes recargar durante una partida."
 # ---------------- Ayuda ----------------
 ayuda: |-
   <dark_gray><strikethrough>                                                  </strikethrough>
-  <gradient:#FFD84D:#FF8A00><bold>   SPEED BUILDERS</bold></gradient> <dark_gray>• <gray>los jugadores entran solos al conectarse
+  <gradient:#FFD84D:#FF8A00><bold>   SPEED BUILDERS 2</bold></gradient> <dark_gray>• <gray>los jugadores entran solos al conectarse
   <gold>  /sb iniciar <dark_gray>- <gray>Inicia la partida
   <gold>  /sb detener <dark_gray>- <gray>Detiene la partida y vuelve al lobby
   <gold>  /sb top <dark_gray>- <gray>Tabla con el top 5 de puntos y su progreso

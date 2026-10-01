@@ -1,6 +1,6 @@
-# SpeedBuilders
+# SpeedBuilders 2
 
-Minijuego **Speed Builders** para **Paper 1.20.4** (Java 17+).
+Minijuego **SpeedBuilders 2** para **Paper 1.20.4** (Java 17+).
 
 Los jugadores memorizan una construcción que aparece durante 20 segundos en su plataforma de 5x5 y, cuando desaparece, deben replicarla lo más rápido posible. En cada ronda se elimina a quienes no la completan, y los eliminados pasan a modo espectador. Nunca se juegan más de 10 rondas.
 
@@ -51,8 +51,12 @@ Romper bloques de tu propia zona es instantáneo y te devuelve el bloque al inve
 
 ## Instalación
 
-1. Descarga el `.jar` desde la pestaña **Actions** del repositorio (artefacto `SpeedBuilders`) o compílalo con `./gradlew build` (queda en `build/libs/`).
-2. Copia el `.jar` en la carpeta `plugins/` de tu servidor Paper 1.20.4 y reinicia el servidor.
+1. Descarga **[SpeedBuilders2.jar](https://github.com/hermitblaze1377/speedbuilders/releases/latest/download/SpeedBuilders2.jar)** (siempre la última versión).
+2. Cópialo en la carpeta `plugins/` de tu servidor Paper 1.20.4 y reinicia el servidor.
+
+### Si venías de SpeedBuilders (versión 1)
+
+Borra el `.jar` antiguo (`SpeedBuilders-1.0.0.jar`), porque ambos usan el comando `/sb`. Al arrancar por primera vez, SpeedBuilders 2 copia `arena.yml`, `records.yml` y la carpeta `construcciones/` desde `plugins/SpeedBuilders/` a `plugins/SpeedBuilders2/`. Después puedes borrar la carpeta antigua.
 
 ## Configuración de la arena
 
@@ -94,7 +98,7 @@ Mientras configuras quedas en **modo editor**, fuera de la arena y con tu invent
 
 ### Carpeta de construcciones (schems)
 
-Al arrancar, el plugin crea `plugins/SpeedBuilders/construcciones/` con tres subcarpetas:
+Al arrancar, el plugin crea `plugins/SpeedBuilders2/construcciones/` con tres subcarpetas:
 
 ```
 construcciones/
@@ -128,4 +132,4 @@ Queda guardada en `construcciones/dificil/molino.yml` y está disponible al inst
 ./gradlew build
 ```
 
-Requiere JDK 17 o superior. El `.jar` queda en `build/libs/SpeedBuilders-1.0.0.jar`.
+Requiere JDK 17 o superior. El `.jar` queda en `build/libs/SpeedBuilders2.jar`.

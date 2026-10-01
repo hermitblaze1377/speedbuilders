@@ -1343,7 +1343,7 @@ public final class Game {
         Settings s = settings();
         List<String> raw = new ArrayList<>();
         if (!state.isRunning()) {
-            raw.add("<dark_gray>" + LocalDate.now().format(DATE) + " <gray>• <dark_gray>Speed Builders");
+            raw.add("<dark_gray>" + LocalDate.now().format(DATE) + " <gray>• <dark_gray>SpeedBuilders 2");
             raw.add("");
             raw.add("<gray>Jugadores: <white>" + aliveCount() + "<dark_gray>/<gray>" + s.maxPlayers());
             raw.add("");
@@ -1373,7 +1373,7 @@ public final class Game {
                         + "pts <dark_gray>" + formatPercent(entry.percent()) + "%");
             }
         } else {
-            raw.add("<dark_gray>" + LocalDate.now().format(DATE) + " <gray>• <dark_gray>Speed Builders");
+            raw.add("<dark_gray>" + LocalDate.now().format(DATE) + " <gray>• <dark_gray>SpeedBuilders 2");
             raw.add("");
             raw.add("<gray>Ronda: <white>" + round + "<dark_gray>/<gray>" + s.maxRounds());
             raw.add("<gray>Vivos: <green>" + aliveCount());

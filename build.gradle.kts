@@ -3,8 +3,8 @@ plugins {
 }
 
 group = "com.hermitblaze"
-version = "1.0.0"
-description = "Minijuego Speed Builders para Paper 1.20.4"
+version = "2.0.0"
+description = "Minijuego SpeedBuilders 2 para Paper 1.20.4"
 
 repositories {
     mavenCentral()
@@ -30,5 +30,5 @@ tasks.processResources {
 }
 
 tasks.jar {
-    archiveFileName.set("SpeedBuilders-${project.version}.jar")
+    archiveFileName.set("SpeedBuilders2.jar")
 }

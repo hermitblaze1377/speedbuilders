@@ -1,13 +1,13 @@
-name: SpeedBuilders
+name: SpeedBuilders2
 version: '${version}'
 main: com.hermitblaze.speedbuilders.SpeedBuildersPlugin
 api-version: '1.20'
-description: Minijuego Speed Builders - memoriza y replica construcciones.
+description: SpeedBuilders 2 - memoriza y replica construcciones.
 authors: [hermitblaze1377]
 
 commands:
   speedbuilders:
-    description: Comando principal de Speed Builders.
+    description: Comando principal de SpeedBuilders 2.
     aliases: [sb]
     usage: /<command> ayuda
 

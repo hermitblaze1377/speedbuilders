@@ -11,6 +11,13 @@ import com.hermitblaze.speedbuilders.listener.GameListener;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.stream.Stream;
+
 public final class SpeedBuildersPlugin extends JavaPlugin {
 
     private Settings settings;
@@ -22,6 +29,7 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        migrateFromV1();
         saveDefaultConfig();
         messages = new Messages(this);
         builds = new BuildManager(this);
@@ -44,7 +52,7 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
         // Mete en la arena a quienes ya estaban conectados (por ejemplo tras un /reload).
         getServer().getScheduler().runTask(this, game::joinAll);
 
-        getLogger().info("SpeedBuilders activado con " + builds.all().size() + " construcciones.");
+        getLogger().info("SpeedBuilders 2 activado con " + builds.all().size() + " construcciones.");
     }
 
     @Override
@@ -54,6 +62,45 @@ public final class SpeedBuildersPlugin extends JavaPlugin {
         }
         if (records != null) {
             records.save();
+        }
+    }
+
+    /**
+     * SpeedBuilders 2 usa la carpeta plugins/SpeedBuilders2/. Si existe la de la versión
+     * anterior (plugins/SpeedBuilders/), se copian la arena, los récords y las construcciones
+     * propias. config.yml y mensajes.yml se generan nuevos.
+     */
+    private void migrateFromV1() {
+        File oldFolder = new File(getDataFolder().getParentFile(), "SpeedBuilders");
+        if (!oldFolder.isDirectory() || getDataFolder().exists()) {
+            return;
+        }
+        Path target = getDataFolder().toPath();
+        try {
+            Files.createDirectories(target);
+            for (String name : new String[]{"arena.yml", "records.yml"}) {
+                Path source = oldFolder.toPath().resolve(name);
+                if (Files.isRegularFile(source)) {
+                    Files.copy(source, target.resolve(name));
+                }
+            }
+            Path oldBuilds = oldFolder.toPath().resolve("construcciones");
+            if (Files.isDirectory(oldBuilds)) {
+                try (Stream<Path> paths = Files.walk(oldBuilds)) {
+                    for (Path path : (Iterable<Path>) paths::iterator) {
+                        Path destination = target.resolve(oldFolder.toPath().relativize(path).toString());
+                        if (Files.isDirectory(path)) {
+                            Files.createDirectories(destination);
+                        } else {
+                            Files.copy(path, destination, StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    }
+                }
+            }
+            getLogger().info("Se copiaron la arena, los récords y las construcciones de plugins/SpeedBuilders/. "
+                    + "Ya puedes borrar esa carpeta y el .jar antiguo.");
+        } catch (IOException ex) {
+            getLogger().warning("No se pudieron copiar los datos de la versión anterior: " + ex.getMessage());
         }
     }
 

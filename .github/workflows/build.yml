@@ -22,15 +22,15 @@ jobs:
         run: ./gradlew build --no-daemon
       - uses: actions/upload-artifact@v4
         with:
-          name: SpeedBuilders
+          name: SpeedBuilders2
           path: build/libs/*.jar
       # Publica el .jar como descarga directa en la sección Releases del repositorio.
       - name: Publicar descarga
         if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ultima-version
-          name: SpeedBuilders (última versión)
+          tag_name: speedbuilders2
+          name: SpeedBuilders 2 (última versión)
           body: "Compilado automáticamente desde el commit ${{ github.sha }} (rama ${{ github.ref_name }})."
           prerelease: false
           make_latest: true

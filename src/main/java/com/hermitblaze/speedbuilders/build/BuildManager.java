@@ -29,8 +29,8 @@ import java.util.Set;
  * comparten id):
  * <ol>
  *   <li>Las incluidas en el plugin (construcciones.yml dentro del .jar).</li>
- *   <li>plugins/SpeedBuilders/construcciones.yml, si existe (construcciones propias).</li>
- *   <li>La carpeta plugins/SpeedBuilders/construcciones/ con subcarpetas facil/, medio/ y
+ *   <li>plugins/SpeedBuilders2/construcciones.yml, si existe (construcciones propias).</li>
+ *   <li>La carpeta plugins/SpeedBuilders2/construcciones/ con subcarpetas facil/, medio/ y
  *       dificil/: archivos .schem (WorldEdit/FAWE) o .yml de una construcción cada uno.</li>
  * </ol>
  */
